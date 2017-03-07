@@ -5,6 +5,27 @@ namespace net {
 
 std::size_t Socket::ms_idCounter = 0;
 
+std::ptrdiff_t Socket::Write(const char * data,
+	std::size_t size,
+	std::ptrdiff_t timeout)
+{
+	if (!WriteReady(timeout))
+		return 0;
+
+	return Send(data, size, false);
+}
+
+std::ptrdiff_t Socket::Read(char * dest,
+	std::size_t size,
+	std::ptrdiff_t timeout)
+{
+
+	if (!ReadReady(timeout))
+		return 0;
+
+	return Recv(dest, size, false);
+}
+
 Socket::Socket()
 {
 	m_id = ++ms_idCounter;
@@ -55,7 +76,7 @@ void Socket::Lock() const
 {
 	if (m_lock.TryLock())
 	{
-		LogNote(2, __FUNCSTR__, "The socket with id = ", Id(),
+		LogNote(1, __FUNCSTR__, "The socket with id = ", Id(),
 			" is now locked.");
 		return;
 	}
@@ -64,15 +85,15 @@ void Socket::Lock() const
 			" that probably cant lock the mutex (try lock fail). Socket id ",
 			"= ", Id(), " .");
 
-	LogNote(2, __FUNCSTR__, "Block to lock socket with id = ", Id(),
+	LogNote(1, __FUNCSTR__, "Block to lock socket with id = ", Id(),
 		" is now locked.");
 	m_lock.Lock();
 }
 
-void Socket::UnLock() const
+void Socket::Unlock() const
 {
-	m_lock.UnLock();
-	LogNote(2, __FUNCSTR__, "The socket with id = ", Id(),
+	m_lock.Unlock();
+	LogNote(1, __FUNCSTR__, "The socket with id = ", Id(),
 		" is now unlocked.");
 }
 void Socket::GetPeerName(sockaddr_storage & addr) const
@@ -85,6 +106,7 @@ void Socket::GetPeerName(sockaddr_storage & addr) const
 		LogError(__FUNCSTR__, "Could not get peer name. Exception:", e.What());
 		throw e;
 	}
+	Unlock();
 }
 
 Socket::Address Socket::GetAddress()
@@ -94,6 +116,7 @@ Socket::Address Socket::GetAddress()
 	{
 		Lock();
 		GetPeerName(addr);
+		Unlock();
 	}
 	catch (const Exception& err)
 	{
@@ -134,7 +157,7 @@ Socket::Address Socket::GetAddress(sockaddr_storage info)
 	}
 	return returnMe;
 }
-bool Socket::Ready(std::ptrdiff_t timeout) const
+bool Socket::ReadReady(std::ptrdiff_t timeout) const
 {
 	timeval to = timeval();
 	int code;
@@ -152,7 +175,7 @@ bool Socket::Ready(std::ptrdiff_t timeout) const
 		to.tv_usec = timeout % 1000000;
 		code = select(((int)m_socket) + 1, &set, 0, 0, &to);
 	}
-
+	Unlock();
 	if (code == 0)
 		return false;
 	else if (code == -1)
@@ -166,10 +189,41 @@ bool Socket::Ready(std::ptrdiff_t timeout) const
 		return true;
 }
 
+bool Socket::WriteReady(std::ptrdiff_t timeout) const
+{
+	timeval to = timeval();
+	int code;
+	fd_set set;
+	FD_ZERO(&set);
+	Lock();
+	FD_SET(m_socket, &set);
+	if (timeout < 0)
+		code = select(((int)m_socket) + 1,  0,&set, 0, nullptr);
+	else /*timeout must be > 0 here. OK to cast*/
+	{
+		/*Get amount of seconds.*/
+		to.tv_sec = ((long)timeout) / 1000000;
+		/*Get the left over micro secs*/
+		to.tv_usec = timeout % 1000000;
+		code = select(((int)m_socket) + 1,  0,&set, 0, &to);
+	}
+	Unlock();
+	if (code == 0)
+		return false;
+	else if (code == -1)
+	{
+		NetworkException e; //auto numbering
+		LogError(__FUNCSTR__, "Could not check ready status. Exception:",
+			e.What());
+		throw e;
+	}
+	else
+		return true;
+}
 void Socket::operator=(const OSSocket & other)
 {
 	if (m_lock.TryLock())
-		m_lock.UnLock();
+		m_lock.Unlock();
 	else
 		LogWarn(__FUNCSTR__, "The mutex is about to be accessed by a thread",
 			" that probably cant lock the mutex (try lock fail). Socket id ",
@@ -177,58 +231,342 @@ void Socket::operator=(const OSSocket & other)
 	/*will block if the socket is locked from a different thread.*/
 	Lock();
 	m_socket = other;
-}
-
-bool Socket::Ready()
-{
-	return false;
-}
-
-std::size_t Socket::Write(const char * data, std::size_t size, std::size_t timeout)
-{
-	return std::size_t();
-}
-
-std::size_t Socket::Read(char * dest, std::size_t size, std::size_t timeout)
-{
-	return std::size_t();
+	Unlock();
 }
 
 Socket::operator OSSocket()const
 {
-	if (m_lock.TryLock())
-		m_lock.UnLock();
-	else
+	if (!m_lock.TryLock())
+	{
 		LogWarn(__FUNCSTR__, "The lock failed. Will block here. This is ",
 			"almost certianly not intended.");
-	/*will block if the socket is locked from a different thread.*/
-	Lock();
+		/*will block if the socket is locked from a different thread.*/
+		Lock();
+	}
+	Unlock();
 	return m_socket;
 }
-/******************************************************************************************/
-ServerSocket::ServerSocket()
-	:Socket()
+
+void Socket::Shutdown(const Socket & socket, cg::net::Shutdown how)
 {
-
+	Lock();
+	auto sd = shutdown(socket, (socklen_t)how);
+	Unlock();
+	if (sd == -1)
+	{
+		NetworkException e; //number auto generated
+		LogError(__FUNCSTR__, "The socket could not shut down. Exception:",
+			e.What());
+		throw e;
+	}
+	LogNote(2, __FUNCSTR__, "Shutdown socket ", Id());
 }
 
-ServerSocket::ServerSocket(bool locked)
-	: Socket(locked)
+void Socket::Close()
 {
+	int error;
+	Lock();
+#ifdef _WIN32
+	error = closesocket(m_socket);
+#else
+	error = close(m_socket);
+#endif // _WIN32
+	Unlock();
+	m_id = Socket::InvalidId;
+	if (error != 0)
+	{
+		NetworkException e; //number auto generated
+		LogError(__FUNCSTR__, "The socket could not close. Exception:",
+			e.What());
+		throw e;
+	}
+	LogNote(2, __FUNCSTR__, "Closed socket ", Id(), ".");
 }
 
-ServerSocket::ServerSocket(ServerSocket && other)
-	: Socket(std::forward<ServerSocket>(other))
+void Socket::Bind(bool ip6, Port port)
 {
-
+	Create(ip6, true);
+	auto res = MakeAddress("", port, true);
+	auto b = bind(m_socket, res->ai_addr, (int)res->ai_addrlen);
+	Unlock();
+	if (b == -1)
+	{
+		NetworkException e; //number auto generated
+		LogError(__FUNCSTR__, "The socket could not bind. Exception:",
+			e.What());
+		throw e;
+	}
+	freeaddrinfo(res);
+	LogNote(2, __FUNCSTR__, "Bound socket ", Id(), " to port ", port, ".");
 }
 
-ServerSocket::~ServerSocket()
+bool Socket::Connect(const std::string & address, Port port)
 {
-	if (m_id == InvalidId)
-		LogWarn(__FUNCSTR__, "The socket will be closed forcfully.");
+	Create(address.find_first_of(':') != std::string::npos, true);
+	auto res = MakeAddress(address.c_str(), port);
+	int ret = connect(m_socket, res->ai_addr, (int)res->ai_addrlen);
+	Unlock();
+	if (ret == -1)
+	{
+		freeaddrinfo(res);
+		NetworkException e;
+		LogWarn(__FUNCSTR__, "The socket was not connected: ",
+			e.What());
+		throw e;
+	}
+	freeaddrinfo(res);
+	LogNote(2, __FUNCSTR__, "Connected Socket ", Id(), " to ", address,
+		" on port ", port, ".");
+	SetBlockMode(false);
+	return true;
 }
+
+void Socket::Listen(socklen_t backlog)
+{
+	Lock();
+	auto l = listen(m_socket, backlog);
+	Unlock();
+	if (l == -1)
+	{
+		NetworkException e; //number auto generated
+		LogError(__FUNCSTR__, "The socket could not listen. Exception:",
+			e.What());
+		throw e;
+	}
+	LogNote(2, __FUNCSTR__, "Socket ", Id(), " is listening.");
+}
+bool Socket::Accept(Socket & sock, bool block)
+{
+	if (block)
+		ReadReady(-1);
+	else
+		if (!ReadReady())
+		{
+			return false;
+		}
+
+	sockaddr_storage clientAddy = { 0 };
+	socklen_t len = sizeof(sockaddr_storage);
+	sock.Lock();
+	Lock();
+	sock = accept(m_socket, (sockaddr*)&clientAddy, &len);
+	Unlock();
+	sock.Unlock();
+	if (sock.m_socket == Socket::InvalidSocket)
+	{
+		NetworkException e; //number auto generated
+		LogError(__FUNCSTR__, "Accept failed. Exception:",
+			e.What());
+		throw e;
+	}
+	auto addr = GetAddress(clientAddy);
+	LogNote(2, __FUNCSTR__, "Socket ", Id(), " connected.\n\tAddress=",
+		addr.first, "\n\t   Port=", addr.second);
+	return true;
+}
+bool Socket::IsOpen()
+{
+	char byte = 0;
+	Lock();
+	socklen_t got = recv(m_socket, &byte, 1, MSG_PEEK);
+	if (got == 0)
+	{
+		return false;
+	}
+	else if (got == -1)
+	{
+		NetworkException e; //auto numbering
+		LogError(__FUNCSTR__, "Unknown Status. Exception:", e.What());
+		throw e;
+	}
+	else
+	{
+		return true;
+	}
+}
+addrinfo* Socket::MakeAddress(std::string && address,
+	Port port,
+	bool portOnly)
+{
+	addrinfo hints = { 0 };
+	addrinfo* resPtr;
+	hints.ai_family = m_useIp6 ? AF_INET6 : AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+	auto portStr = cg::ToString(port);
+	int result;
+	if (!portOnly)
+	{
+		result
+			= getaddrinfo(address.c_str(), portStr.c_str(), &hints, &resPtr);
+	}
+	else
+	{
+		result
+			= getaddrinfo(NULL, portStr.c_str(), &hints, &resPtr);
+	}
+	if (result != 0)
+	{
+		NetworkException e; //number auto generated
+		LogError(__FUNCSTR__, "Get Address Info failed. Exception:",
+			e.What());
+		throw e;
+	}
+	LogNote(2, __FUNCSTR__, "Addrinfo data allocated, make sure to clean it",
+		" up.");
+	return resPtr;
+}
+
+std::size_t Socket::Recv(char* data,
+	std::size_t size,
+	bool block,
+	socklen_t flags)
+{
+	Lock();
+	/*If block, wait untill we know the recv has data.*/
+	if (block)
+		ReadReady(-1);
+	if (size == 0)
+	{
+		LogError(__FUNCSTR__, "The size is zero, will send nothing.");
+	}
+
+	socklen_t got =
+		recv(m_socket, data, (socklen_t)size, flags);
+
+	Unlock();
+	if (got == -1)
+	{
+		auto code = NetworkException::GetErrno();
+		if (code == Error::WouldBlock)
+		{
+			LogNote(3, __FUNCSTR__, "The socket is not ready (would block).");
+			return 0;
+		}
+		NetworkException e; //auto numbering
+		LogError(__FUNCSTR__, "Could not recv data. Exception:", e.What());
+		throw e;
+	}
+	if (got == 0)
+	{
+		/*Normal close happened*/
+		return -1;
+	}
+	return got;
+}
+std::size_t Socket::Send(const char* data,
+	std::size_t size,
+	bool block,
+	socklen_t flags)
+{
+	Lock();
+	/*If block, wait untill we know the send has data.*/
+	if (block)
+		WriteReady(-1);
+	if (size == 0)
+	{
+		LogError(__FUNCSTR__, "The size is zero, will send nothing.");
+	}
+
+	socklen_t sent
+		= send(m_socket, data, (socklen_t)size, flags);
+	Unlock();
+	if (sent == -1)
+	{
+		auto code = NetworkException::GetErrno();
+		if (code == Error::WouldBlock)
+		{
+			LogNote(3, __FUNCSTR__, "The socket is not ready (would block).");
+			return 0;
+		}
+		NetworkException e; //auto numbering
+		LogError(__FUNCSTR__, "Could not send data. Exception:", e.What());
+		throw e;
+	}
+	if (sent == 0)
+		return -1;
+	return sent;
+}
+
+void Socket::Create(bool useIp6, bool stayLocked)
+{
+	m_useIp6 = useIp6;
+	Lock();
+	m_socket = ::socket((useIp6 ? AF_INET6 : AF_INET), SOCK_STREAM, 0);
+	if (m_socket == Socket::InvalidSocket)
+	{
+		NetworkException e; //number auto generated
+		LogError(__FUNCSTR__, "The socket could not be created. Exception:",
+			e.What());
+		throw e;
+	}
+	LogNote(2, __FUNCSTR__, "Socket ", Id(),
+		" registered with the os. Sockets may be created in a locked state.");
+	if (!stayLocked)
+		Unlock();
+}
+
+void Socket::SetBlockMode(bool block)
+{
+	Lock();
+	LogNote(1, __FUNCSTR__, "Setting the block mode to block = ",
+		(block ? "True" : "False"));
+#ifdef _WIN32
+	/*imode 0=block 1=no block*/
+	u_long iMode = block ? 0 : 1;
+	socklen_t code = ioctlsocket(m_socket, FIONBIO, &iMode);
+	Unlock();
+	if (code != 0)
+	{
+		NetworkException e; //auto numbering
+		LogError(__FUNCSTR__, "Could not set block mode. Exception:",
+			e.What());
+		throw e;
+	}
+	
+#else
+	socklen_t opts = fcntl(m_socket, F_GETFL);
+	Unlock();
+	if (opts < 0)
+	{
+		NetworkException e; //auto numbering
+		LogError(__FUNCSTR__, "Could not set block mode. Exception:",
+			e.What());
+		throw e;
+	}
+
+	if (opts & O_NONBLOCK)
+	{
+		/*blocking already*/
+		if (block)
+			return;
+	}
+	else
+	{
+		/*non blocking already*/
+		if (!block)
+			return;
+}
+
+
+	opts = block ? opts | O_NONBLOCK : opts & (~O_NONBLOCK);
+	if (fcntl(socket, F_SETFL, opts) < 0)
+	{
+		NetworkException e; //auto numbering
+		LogError(__FUNCSTR__, "Could not set block mode. Exception:", e.What());
+		throw e;
+	}
+#endif
+}
+
+
 
 
 }
 }
+
+
+
+
+
+

@@ -11,8 +11,10 @@ class Writer : cg::LogAdaptor<Writer>
 {
 public:
 	/**Determine if the object is in a state that would allow it to send.
+	\param timeout The time in micro seconds to wait untill returning. ZERO = 
+	no timeout, Lessthan ZERO = inf timeout.
 	\return True if the object is ready to be written to without blocking.*/
-	virtual bool Ready() = 0;
+	virtual bool WriteReady(std::ptrdiff_t timeout = 0) const = 0;
 	/**Write some data to the object.  If Ready() returned true before this
 	call, the timeout should never be reached sense this object should return
 	immediatly.
@@ -21,11 +23,11 @@ public:
 	\param timeout time untill return if the data does not get sent. If the
 	implementing class does not timeout (like a file or mem write) then this
 	param should have a default value and be ignored.  The timeout is in micro
-	seconds.
+	seconds, Lessthan ZERO = inf timeout.
 	\return The amount of bytes written.*/
-	virtual std::size_t Write(const char* data,
+	virtual std::ptrdiff_t Write(const char* data,
 		std::size_t size,
-		std::size_t timeout) = 0;
+		std::ptrdiff_t timeout) = 0;
 	/**Write data in async mode.  This will wrap a call to Write into the
 	std::async function and return a future.
 
@@ -34,11 +36,11 @@ public:
 	\param timeout time untill return if the data does not get sent. If the
 	implementing class does not timeout (like a file or mem write) then this
 	param should have a default value and be ignored.  The timeout is in micro
-	seconds.
+	seconds, Lessthan ZERO = inf timeout.
 	\return A future containing the amount of bytes written.*/
-	inline std::future<std::size_t> AsyncWrite(const char* data,
+	inline std::future<std::ptrdiff_t> AsyncWrite(const char* data,
 		std::size_t size,
-		std::size_t timeout = 0)
+		std::ptrdiff_t timeout = 0)
 	{
 		return std::async(std::launch::async, [&]() {
 			return this->Write(data,size, timeout);
@@ -51,10 +53,11 @@ public:
 	its data.
 	\param data An object of type T that has .data() const and .size() const .
 	\param timeout The time in micro seconds to wait untill returning. If the 
-	op does not timeout then set a default value and ignore the parameter.
+	op does not timeout then set a default value and ignore the parameter, 
+	Lessthan ZERO = inf timeout.
 	\return The amount of bytes written.*/
 	template<typename T>
-	inline std::size_t Write(const T & data, std::size_t timeout)
+	inline std::ptrdiff_t WriteT(const T & data, std::ptrdiff_t timeout)
 	{
 		return Write(data.data(), data.size(), timeout);
 	}
@@ -69,11 +72,11 @@ public:
 	\param timeout time untill return if the data does not get sent. If the
 	implementing class does not timeout (like a file or mem write) then this
 	param should have a default value and be ignored.  The timeout is in micro
-	seconds.
+	seconds, Lessthan ZERO = inf timeout.
 	\return A future containing the amount of bytes written.*/
 	template<typename T>
-	inline std::future<std::size_t> AsyncWrite(const T & data,
-		std::size_t timeout = 0)
+	inline std::future<std::ptrdiff_t> AsyncWriteT(const T & data,
+		std::ptrdiff_t timeout = 0)
 	{
 		return std::async(std::launch::async, [&]() {
 			return this->Write<T>(data, timeout);

@@ -14,7 +14,6 @@
 #include <cryptopp/cryptlib.h>
 #include <cryptopp/secblock.h>
 
-#include "Serial.hpp"
 
 namespace cg {
 

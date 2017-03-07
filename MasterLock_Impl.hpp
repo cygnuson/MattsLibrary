@@ -19,7 +19,7 @@ inline bool BasicLock<Mutex, Ref>::TryLock()
 		return false;
 }
 template<typename Mutex, bool Ref>
-inline void BasicLock<Mutex, Ref>::UnLock()
+inline void BasicLock<Mutex, Ref>::Unlock()
 {
 	if (m_unique_hits == 0)
 	{
@@ -46,7 +46,7 @@ inline ScopeLock<BasicLock<Mutex, Ref>>
 BasicLock<Mutex, Ref>::LockGuard()
 {
 	return ScopeLock<BasicLock<Mutex, Ref>>(*this,
-		&BasicLock<Mutex, Ref>::UnLock,
+		&BasicLock<Mutex, Ref>::Unlock,
 		&BasicLock<Mutex, Ref>::Lock);
 }
 
@@ -57,7 +57,7 @@ BasicLock<Mutex, Ref>::LockGuard(
 	T * member)
 {
 	return ScopeLock<BasicLock<Mutex, Ref>, T>(*this,
-		&BasicLock<Mutex, Ref>::UnLock,
+		&BasicLock<Mutex, Ref>::Unlock,
 		&BasicLock<Mutex, Ref>::Lock, member);
 }
 /*****************************************************************************/

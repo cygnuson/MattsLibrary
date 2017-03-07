@@ -132,7 +132,7 @@ public:
 	/**Unlock the lock gained from tryWriter.*/
 	inline void UnTryWriter()
 	{
-		return m_lock.UnLock();
+		return m_lock.Unlock();
 	}
 	/**The main writer*/
 	inline auto Writer()

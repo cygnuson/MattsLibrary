@@ -14,6 +14,12 @@
 namespace cg {
 namespace net {
 
+enum class Shutdown
+{
+	Read,
+	Write,
+	Both
+};
 
 /**A data set for the sockets. It is used for holding the OS specific info.  
 If a reference of the socket exists anyware it should be locked.  When the
@@ -79,11 +85,8 @@ struct Socket : cg::net::NetworkObject,
 	bool operator==(const Socket& other) const;
 	/**Lock the socket manually.*/
 	void Lock() const;
-	/**UnLock the socket manually.*/
-	void UnLock() const;
-	/**Determine if the object is in a state that would allow it to send.
-	\return True if the object is ready to be written to without blocking.*/
-	virtual bool Ready() override;
+	/**Unlock the socket manually.*/
+	void Unlock() const;
 	/**Write some data to the object.  If Ready() returned true before this
 	call, the timeout should never be reached sense this object should return
 	immediatly.
@@ -94,9 +97,9 @@ struct Socket : cg::net::NetworkObject,
 	param should have a default value and be ignored.  The timeout is in micro
 	seconds.
 	\return The amount of bytes written.*/
-	virtual std::size_t Write(const char * data,
+	virtual std::ptrdiff_t Write(const char * data,
 		std::size_t size,
-		std::size_t timeout) override;
+		std::ptrdiff_t timeout) override;
 	/**Read some data from the object.  If Ready() returned true before this
 	call, the timeout should never be reached sense this object should return
 	immediatly.
@@ -107,15 +110,21 @@ struct Socket : cg::net::NetworkObject,
 	param should have a default value and be ignored.  The timeout is in micro
 	seconds.
 	\return The amount of bytes read.*/
-	virtual std::size_t Read(char * dest,
+	virtual std::ptrdiff_t Read(char * dest,
 		std::size_t size,
-		std::size_t timeout) override;
+		std::ptrdiff_t timeout) override;
 	/**Check and see if the socket has data available.
 	\param timeout The amount of time to wait untill returning a false signal.
 	The time units are in microseconds.  A timeout of 0 will not block at all.
 	A negative timeout will block forever untill data is ready.
 	\return True if at least one byte can be read without blocking.*/
-	bool Ready(std::ptrdiff_t timeout = 0) const;
+	virtual bool ReadReady(std::ptrdiff_t timeout = 0) const;
+	/**Check and see if the socket can send data without blocking.
+	\param timeout The amount of time to wait untill returning a false signal.
+	The time units are in microseconds.  A timeout of 0 will not block at all.
+	A negative timeout will block forever untill data is ready.
+	\return True if at least one byte can be written without blocking.*/
+	virtual bool WriteReady(std::ptrdiff_t timeout = 0) const;
 	/**Get the name of a connected socket. Usually as an address.
 
 	\param socket The socket for which to get the name.
@@ -144,6 +153,91 @@ struct Socket : cg::net::NetworkObject,
 	function.
 	\return The Address object with the relevent info.*/
 	static Address GetAddress(sockaddr_storage info);
+	/**Receive generic data from the socket.
+
+	Try to receive any data from the socket.  If data cannot be recieved for
+	any reason or an exception is thrown, data is unaltered.
+	\param data A char * to the location to store the data.
+	\param size The size of the memory store.
+	\param block Pass true to block the calling thread untill something can
+	be read and checked. If false, the function will return immediatly whether
+	or not any data was read.
+	\param flags Flags to pass to the send function. usually 0.
+	\return The amount of bytes received. 0 if no data was received, but the 
+	socket is open still, or < 0 if the socket was closed properly.
+	\throws cg::net::NetworkException A network exception is thrown if the
+	underlying socket infrastructure throws an exception.*/
+	std::size_t Recv(char* data,
+		std::size_t size,
+		bool block,
+		socklen_t flags = 0);
+	/**Send data to a connected socket.
+
+	Send data to a connected socket. If the socket does not have a valid
+	connection, then the function will throw cg::net::NetworkException.
+	\param socket A reference to a socket to send the data to.
+	\param data A pointer to the data to send.
+	\param size The size of the data to send.
+	\param block True to black untill all the data is sent.
+	\param flags The flags to be passed to the send function.
+	\return The amount of bytes sent. -1 if the socket is closed, or zero if
+	nothing was sent but is still open.
+	\throws cg::net::NetworkException A network exception is thrown if the
+	underlying socket infrastructure throws an exception.*/
+	std::size_t Send(const char* data,
+		std::size_t size,
+		bool block,
+		socklen_t flags = 0);
+	/**Shut down a socket.
+
+	Shut down a socket.  Use the options cg::net::Shutdown enum to detemrine
+	how to shut it down.
+	\param how The type of shut down as a cg::net::Shutdown enum.
+	\sa cg::net::Shutdown
+	\throws NetworkEexception Throws the error code from the OS socket.*/
+	void Shutdown(const Socket& socket,
+		cg::net::Shutdown how);
+	/**Close a socket gracefully.
+
+	\throws NetworkException Throws the error code from the OS sockets.*/
+	void Close();
+	/**Bind the socket to a port.
+
+	\param port The port that the socket will bind to. Must not be binded to
+	by a different socket already.
+	\param ip6 True to configure for ip6.
+	\throws NetworkException Throws the error code set by the OS sockets.*/
+	void Bind(bool ip6, Port port);
+	/**Connect a socket to a remote address.
+
+	\param addy The address to have in the struct.
+	\param port The port to be in the struct.
+	\return True if the socket is open.
+	\throws NetworkException Throws the error code used by the OS sockets.*/
+	bool Connect(const std::string& addy,
+		Port port);
+	/**Have a socket listen for incomming connections.
+
+	Both the listener socket and the connections socket will lock when this is
+	called. If another thread own either one, it will wait.
+	\param backlog The amount of connections that can be pending before acceot
+	has to be called.
+	\throws NetworkException Throws the code that is set by the OS sockets.*/
+	void Listen(socklen_t backlog = 100);
+	/**Try to accept a connection.
+
+	Try to accept a connection.
+	\param socket The socket that will be the new connection if successfull.
+	\param block True to block untill a connection is accepted.
+	\return True if a socket was accepted.
+	\throws NetworkException Throws the code that the OS sockets set on error.
+	*/
+	bool Accept(Socket& socket,
+		bool block = true);
+	/**Determine the status of a socket.
+	
+	\return True if the socket is open.*/
+	bool IsOpen();
 protected:/********************************************************************PROTECTED**********/
 	using cg::LogAdaptor<Socket>::EnableLogs;
 	using cg::LogAdaptor<Socket>::LogNote;
@@ -152,6 +246,20 @@ protected:/********************************************************************P
 	using cg::LogAdaptor<Socket>::Log;
 	using cg::LogAdaptor<Socket>::ms_log;
 	using cg::LogAdaptor<Socket>::ms_name;
+	/**Create an address info object for use with the other static functions
+	here.
+
+	NOTE: MakeAddress will allocate data use freeaddrinfo(returnedPtr); to
+	clean it up.
+	\param address The address to create for.
+	\param port The port to be included.
+	\param portOnly True to ignore the address, and only make a port.
+	\return A pointer to an addrinfo object that contains the address made.
+	\throws NetworkException Throws the code that the OS sockets set on error.
+	*/
+	addrinfo* MakeAddress(std::string&& address,
+		Port port,
+		bool portOnly = false);
 	/**Allow this to be used in place of regular sockets.
 	
 	Allow this to be used in place of regular sockets.  Dont forget to lock
@@ -161,6 +269,22 @@ protected:/********************************************************************P
 	outside, this will hang untill that thread releases it.
 	\return The os-level socket for use with the os functions.*/
 	operator OSSocket ()const;
+	/**Rgister the socket with the operating system.
+
+	Register the socket with the operating system so that it can be used for
+	communication.
+	\param stayLocked True to stay locked after created.
+	\throws NetworkException Will throw with any socket system errors that may
+	arise with the socket creation process.*/
+	void Create(bool useIp6, bool stayLocked);
+	/**Set a socket to be in a certian blocking mode.
+
+	This is mainly for getting the linux sockets into non block mode.  Win
+	sockets are not designed to be blocking but they can be if required.
+	\param socket The socket to set.
+	\param block True to set the socket to blocking mode. Flase to set it to
+	non-blocking mode.*/
+	void SetBlockMode(bool block);
 	/**Allow the fast assigment of the OSSocket.
 	
 	\param osock The OSSocket number that will be assigned to this socket.*/
@@ -173,27 +297,12 @@ protected:/********************************************************************P
 	mutable LockType m_lock;
 	/** The sockets ID.*/
 	std::size_t m_id;
+	/**True if created with ip6*/
+	bool m_useIp6 = false;
 	/**Keep track of IDs*/
 	static std::size_t ms_idCounter; 
 
 };
-
-/**Type safe socket for listening and accepting (and anything is Socket too).
-\sa cg::net::Socket*/
-struct ServerSocket : public Socket 
-{
-	/**Default ctor jus calls Sockets ctor.*/
-	ServerSocket();
-	/**Create the socket and lock it immediatly.
-	\param locked True to create a socket locked.*/
-	ServerSocket(bool locked);
-	/**move ctor jus calls Sockets move ctor.
-	\param other The other ServerSocket.*/
-	ServerSocket(ServerSocket&& other);
-	/**Destruct the socket. Will warn if not closed.*/
-	~ServerSocket();
-};
-
 
 }
 }

@@ -10,9 +10,11 @@ namespace cg {
 class Reader : cg::LogAdaptor<Reader>
 {
 public:
-	/**Determine if the object is in a state that would allow it to read.
-	\return True if the object is ready to be read to without blocking.*/
-	virtual bool Ready() = 0;
+	/**Determine if the object is in a state that would allow it to send.
+	\param timeout The time in micro seconds to wait untill returning. ZERO =
+	no timeout, Lessthan ZERO = inf timeout.
+	\return True if the object is ready to be written to without blocking.*/
+	virtual bool ReadReady(std::ptrdiff_t timeout = 0) const = 0;
 	/**Read some data from the object.  If Ready() returned true before this
 	call, the timeout should never be reached sense this object should return
 	immediatly.
@@ -21,11 +23,11 @@ public:
 	\param timeout time untill return if the data does not get read. If the
 	implementing class does not timeout (like a file or mem write) then this
 	param should have a default value and be ignored.  The timeout is in micro
-	seconds.
+	seconds, Lessthan ZERO = inf timeout.
 	\return The amount of bytes read.*/
-	virtual std::size_t Read(char* dest,
+	virtual std::ptrdiff_t Read(char* dest,
 		std::size_t size,
-		std::size_t timeout) = 0;
+		std::ptrdiff_t timeout) = 0;
 	/**Read data in async mode.  This will wrap a call to Read into the
 	std::async function and return a future.
 
@@ -34,11 +36,11 @@ public:
 	\param timeout time untill return if the data does not get read. If the
 	implementing class does not timeout (like a file or mem write) then this
 	param should have a default value and be ignored.  The timeout is in micro
-	seconds.
+	seconds, Lessthan ZERO = inf timeout.
 	\return A future containing the amount of bytes read.*/
-	inline virtual std::future<std::size_t> AsyncRead(char* dest,
+	inline virtual std::future<std::ptrdiff_t> AsyncRead(char* dest,
 		std::size_t size,
-		std::size_t timeout = 0)
+		std::ptrdiff_t timeout = 0)
 	{
 		return std::async(std::launch::async, [&]() {
 			return this->Read(dest, size, timeout);
@@ -51,10 +53,11 @@ public:
 	data.
 	\param data An object of type T that has .data()  and .size() const .
 	\param timeout The time in micro seconds to wait untill returning. If the
-	op does not timeout then set a default value and ignore the parameter.
+	op does not timeout then set a default value and ignore the parameter, 
+	Lessthan ZERO = inf timeout.
 	\return The amount of bytes read.*/
 	template<typename T>
-	inline std::size_t Read(T & data, std::size_t timeout)
+	inline std::ptrdiff_t ReadT(T & data, std::ptrdiff_t timeout)
 	{
 		return Read(data.data(), data.size(), timeout);
 	}
@@ -69,11 +72,11 @@ public:
 	\param timeout time untill return if the data does not get read. If the
 	implementing class does not timeout (like a file or mem write) then this
 	param should have a default value and be ignored.  The timeout is in micro
-	seconds.
+	seconds, Lessthan ZERO = inf timeout.
 	\return A future containing the amount of bytes written.*/
 	template<typename T>
-	inline std::future<std::size_t> AsyncRead(T & data,
-		std::size_t timeout = 0)
+	inline std::future<std::ptrdiff_t> AsyncReadT(T & data,
+		std::ptrdiff_t timeout = 0)
 	{
 		return std::async(std::launch::async, [&]() {
 			return this->Read<T>(data, timeout);

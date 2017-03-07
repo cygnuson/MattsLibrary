@@ -14,18 +14,18 @@ public:
 	provided will both be the input and the output.
 	\param data The place to read, and store the data.
 	\param size The size of the data to process.*/
-	inline void operator()(char* data, std::size_t size)
+	inline void Transform(char* data, std::size_t size)
 	{
-		(*this)(data, data, size,size);
+		this->Transform(data, data, size,size);
 	}
 	/**Covnert data that will be converted *inplace* meaning that the pointer
 	provided will both be the input and the output.
 	\tparam T An object with .data() and .size().
 	\param data The place to read, and store the data.*/
 	template<typename T>
-	inline void operator()(T& data)
+	inline void TransformT(T& data)
 	{
-		(*this)(data.data(), data.size());
+		this->Transform(data.data(), data.size());
 	}
 
 
@@ -36,7 +36,7 @@ public:
 	\param dSize The size of the data source.
 	\param sSize The size of the data destination.  If the destination size is
 	smaller than the source size the result is undefined behavior.*/
-	virtual void operator()(char* dest, const char* src, 
+	virtual void Transform(char* dest, const char* src,
 		std::size_t dSize, std::size_t sSize) = 0;
 	/**Covnert data that will be converted *inplace* meaning that the pointer
 	provided will both be the input and the output.
@@ -45,9 +45,9 @@ public:
 	\param dest The place to store the data.
 	\param src The place to read the data from.*/
 	template<typename T,typename Y>
-	inline void operator()(T& dest, const Y& src)
+	inline void TransformT(T& dest, const Y& src)
 	{
-		(*this)(dest.data(),src.data(), dest.size(), src.size());
+		this->Transform(dest.data(),src.data(), dest.size(), src.size());
 	}
 };
 

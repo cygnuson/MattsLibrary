@@ -19,7 +19,7 @@ inline void WaitTimedBasicLock<Mutex, Ref>::Lock()
 }
 
 template<typename Mutex, bool Ref>
-inline void WaitTimedBasicLock<Mutex, Ref>::UnLock()
+inline void WaitTimedBasicLock<Mutex, Ref>::Unlock()
 {
 	m_lock.unlock();
 }
@@ -34,7 +34,7 @@ inline ScopeLock<WaitTimedBasicLock<Mutex, Ref>>
 WaitTimedBasicLock<Mutex, Ref>::LockGuard()
 {
 	return ScopeLock<WaitTimedBasicLock<Mutex, Ref>> (*this,
-		&WaitTimedBasicLock<Mutex, Ref>::UnLock,
+		&WaitTimedBasicLock<Mutex, Ref>::Unlock,
 		&WaitTimedBasicLock<Mutex, Ref>::Lock);
 }
 
@@ -45,7 +45,7 @@ WaitTimedBasicLock<Mutex, Ref>::LockGuard(
 	T * member)
 {
 	return ScopeLock<WaitTimedBasicLock<Mutex, Ref>, T>(*this,
-		&WaitTimedBasicLock<Mutex, Ref>::UnLock,
+		&WaitTimedBasicLock<Mutex, Ref>::Unlock,
 		&WaitTimedBasicLock<Mutex, Ref>::Lock, member);
 }
 /*****************************************************************************/

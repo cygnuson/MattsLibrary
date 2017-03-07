@@ -493,7 +493,7 @@ public:
 	void Lock();
 	/**Call the unlock function pointer.  If Shared is true, it will be a
 	shared lock, otherwise it will be a unique lock.*/
-	void UnLock();
+	void Unlock();
 	/**Call the try lock function pointer.  If Shared is true, it will be a
 	shared lock, otherwise it will be a unique lock.
 	\return True if the lock was locked, false if it was not.*/
@@ -545,7 +545,7 @@ public:
 	void Lock();
 	/**Call the unlock function pointer.  If Shared is true, it will be a
 	shared lock, otherwise it will be a unique lock.*/
-	void UnLock();
+	void Unlock();
 	/**Call the try lock function pointer.  If Shared is true, it will be a
 	shared lock, otherwise it will be a unique lock.
 	\return True if the lock was locked, false if it was not.*/

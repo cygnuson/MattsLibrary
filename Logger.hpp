@@ -599,25 +599,29 @@ void Logger::Log(
 	if ((level & _sCurrentLevel) > 0)
 	{
 		std::string label;
+		if (level == e_Error)
+		{
+			label = "~~~~~";
+		}
 		switch (level)
 		{
 		case Logger::Level::e_Warning:
-			label = _sWarnLabel;
+			label += _sWarnLabel;
 			break;
 		case Logger::Level::e_Error:
-			label = _sErrorLabel;
+			label += _sErrorLabel;
 			break;
 		case Logger::Level::e_Note1:
-			label = _sNoteLabel1;
+			label += _sNoteLabel1;
 			break;
 		case Logger::Level::e_Note2:
-			label = _sNoteLabel2;
+			label += _sNoteLabel2;
 			break;
 		case Logger::Level::e_Note3:
-			label = _sNoteLabel3;
+			label += _sNoteLabel3;
 			break;
 		default:
-			label = "Invalid Level:";
+			label += "Invalid Level:";
 			break;
 		}
 		if (_sCloneAllStreams)
@@ -640,6 +644,8 @@ void Logger::Log(
 			std::ostream stream(ActiveLog());
 			stream << CurrentThread() << CurrentTime() << label << std::flush;
 			LogHelper(std::forward<Args>(args)...);
+			if (level == e_Error)
+				stream << "~~~~~";
 			stream << std::endl << std::flush;
 		}
 
