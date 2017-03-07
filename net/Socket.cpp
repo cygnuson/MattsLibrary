@@ -75,7 +75,65 @@ void Socket::UnLock() const
 	LogNote(2, __FUNCSTR__, "The socket with id = ", Id(),
 		" is now unlocked.");
 }
+void Socket::GetPeerName(sockaddr_storage & addr) const
+{
+	socklen_t addSize = sizeof(addr);
+	Lock();
+	if (getpeername(m_socket, (sockaddr*)&addr, &addSize) == -1)
+	{
+		NetworkException e; //auto numbering
+		LogError(__FUNCSTR__, "Could not get peer name. Exception:", e.What());
+		throw e;
+	}
+}
 
+Socket::Address Socket::GetAddress()
+{
+	sockaddr_storage addr;
+	try
+	{
+		Lock();
+		GetPeerName(addr);
+	}
+	catch (const Exception& err)
+	{
+		LogError(__FUNCSTR__, "Exception: ", err.What());
+		throw;
+	}
+	return GetAddress(addr);
+}
+
+Socket::Address Socket::GetAddress(sockaddr_storage info)
+{
+	Address returnMe;
+	const char* ret = nullptr;
+	if (info.ss_family == AF_INET)
+	{
+		/*ip4 version*/
+		sockaddr_in *s = (sockaddr_in*)&info;
+		returnMe.second = ntohs(s->sin_port);
+		char ipstr[INET_ADDRSTRLEN];
+		ret = inet_ntop(AF_INET, &s->sin_addr, ipstr, sizeof(ipstr));
+		returnMe.first = ipstr;
+	}
+	else
+	{
+		/*ip6 version*/
+		sockaddr_in6 *s = (sockaddr_in6*)&info;
+		returnMe.second = ntohs(s->sin6_port);
+		char ipstr[INET6_ADDRSTRLEN];
+		ret = inet_ntop(AF_INET6, &s->sin6_addr, ipstr, sizeof(ipstr));
+		returnMe.first = ipstr;
+	}
+	if (ret == nullptr)
+	{
+		NetworkException e; //auto numbering
+		LogError(__FUNCSTR__, "Could not convert address. Exception:",
+			e.What());
+		throw e;
+	}
+	return returnMe;
+}
 bool Socket::Ready(std::ptrdiff_t timeout) const
 {
 	timeval to = timeval();
@@ -100,7 +158,8 @@ bool Socket::Ready(std::ptrdiff_t timeout) const
 	else if (code == -1)
 	{
 		NetworkException e; //auto numbering
-		LogError(__FUNCSTR__, "Exception:", e.What());
+		LogError(__FUNCSTR__, "Could not check ready status. Exception:",
+			e.What());
 		throw e;
 	}
 	else
@@ -118,6 +177,21 @@ void Socket::operator=(const OSSocket & other)
 	/*will block if the socket is locked from a different thread.*/
 	Lock();
 	m_socket = other;
+}
+
+bool Socket::Ready()
+{
+	return false;
+}
+
+std::size_t Socket::Write(const char * data, std::size_t size, std::size_t timeout)
+{
+	return std::size_t();
+}
+
+std::size_t Socket::Read(char * dest, std::size_t size, std::size_t timeout)
+{
+	return std::size_t();
 }
 
 Socket::operator OSSocket()const
