@@ -40,6 +40,13 @@ CryptoPP::SecByteBlock SecureHelpers::RSAEncrypt(
 	const CryptoPP::SecByteBlock& data,
 	CryptoPP::RSA::PublicKey& key)
 {
+	return RSAEncrypt((char*)data.data(), data.size(), key);
+}
+
+CryptoPP::SecByteBlock SecureHelpers::RSAEncrypt(const char * data, 
+	std::size_t size,
+	CryptoPP::RSA::PublicKey & key)
+{
 	CryptoPP::AutoSeededRandomPool rng;
 	CryptoPP::RSAES_OAEP_SHA_Encryptor encryptor(key);
 	if (encryptor.FixedMaxPlaintextLength() == 0)
@@ -47,24 +54,31 @@ CryptoPP::SecByteBlock SecureHelpers::RSAEncrypt(
 		/*encrption exception, error happened.*/
 		int stop = 0;
 	}
-	if (data.size() > encryptor.FixedMaxPlaintextLength())
+	if (size > encryptor.FixedMaxPlaintextLength())
 	{
 		/*encrption exception, input data to big*/
 		int stop = 0;
 	}
-	size_t ecl = encryptor.CiphertextLength(data.size());
+	size_t ecl = encryptor.CiphertextLength(size);
 	if (ecl == 0)
 	{
 		/*encryption error, ciphertextlenth not good*/
 		int stop = 0;
 	}
 	CryptoPP::SecByteBlock crpytedData(ecl);
-	encryptor.Encrypt(rng, data, data.size(), crpytedData);
+	encryptor.Encrypt(rng, (byte*)data, size, crpytedData);
 	return crpytedData;
 }
 
 CryptoPP::SecByteBlock SecureHelpers::RSADecrypt(
 	const CryptoPP::SecByteBlock& data,
+	CryptoPP::RSA::PrivateKey & key)
+{
+	return RSADecrypt((char*)data.data(),data.size(),key);
+}
+
+CryptoPP::SecByteBlock SecureHelpers::RSADecrypt(const char * data, 
+	std::size_t size,
 	CryptoPP::RSA::PrivateKey & key)
 {
 	CryptoPP::AutoSeededRandomPool rng;
@@ -74,12 +88,12 @@ CryptoPP::SecByteBlock SecureHelpers::RSADecrypt(
 		/*encrption exception, error happened.*/
 		int stop = 0;
 	}
-	if (data.size() > decryptor.FixedCiphertextLength())
+	if (size > decryptor.FixedCiphertextLength())
 	{
 		/*encrption exception, input data to big*/
 		int stop = 0;
 	}
-	size_t ecl = decryptor.MaxPlaintextLength(data.size());
+	size_t ecl = decryptor.MaxPlaintextLength(size);
 	if (ecl == 0)
 	{
 		/*encryption error, ciphertextlenth not good*/
@@ -88,7 +102,7 @@ CryptoPP::SecByteBlock SecureHelpers::RSADecrypt(
 	CryptoPP::SecByteBlock recovered(ecl);
 	try {
 		CryptoPP::DecodingResult res =
-			decryptor.Decrypt(rng, data, data.size(), recovered);
+			decryptor.Decrypt(rng, (byte*) data, size, recovered);
 		recovered.resize(res.messageLength);
 	}
 	catch (const CryptoPP::Exception& e)
@@ -124,35 +138,60 @@ bool SecureHelpers::RSASHA256Verify(const CryptoPP::SecByteBlock & data,
 void SecureHelpers::AESEncrypt(const AESData & data,
 	CryptoPP::SecByteBlock & out)
 {
-	if (data.m_key.size() == 0)
+	AESEncrypt((char*)out.data(), (char*)data.m_data->data(), out.size(),
+		data.m_data->size(),data.m_key, data.m_iv);
+}
+
+void SecureHelpers::AESEncrypt(char * dest, 
+	const char * src, 
+	std::size_t dSize,
+	std::size_t sSize,
+	const CryptoPP::SecByteBlock& key,
+	const CryptoPP::SecByteBlock& iv)
+{
+	if (dSize < sSize)
+	{
+		cg::Logger::LogError("The destination size is to small.");
+		throw EncryptionException(EncryptionException::Code::BadMem);
+	}
+	if (key.size() == 0)
 		throw EncryptionException(EncryptionException::Code::BadKey);
-	if (data.m_iv.size() == 0)
+	if (iv.size() == 0)
 		throw EncryptionException(EncryptionException::Code::BadIv);
-	if (data.m_data->size() == 0)
+	if (sSize == 0)
 		throw EncryptionException(EncryptionException::Code::NoData);
-	CryptoPP::CTR_Mode<CryptoPP::AES>::Encryption encryptor(data.m_key,
-		data.m_key.size(), data.m_iv);
-	encryptor.ProcessData(out,*data.m_data, data.m_data->size());
+	CryptoPP::CTR_Mode<CryptoPP::AES>::Encryption encryptor(key,
+		key.size(), iv);
+	encryptor.ProcessData((byte*)dest, (byte*)src, dSize);
 }
 
 void SecureHelpers::AESEncrypt(AESData& data)
 {
-	if (data.m_key.size() == 0)
-		throw EncryptionException(EncryptionException::Code::BadKey);
-	if (data.m_iv.size() == 0)
-		throw EncryptionException(EncryptionException::Code::BadIv);
-	if (data.m_data->size() == 0)
-		throw EncryptionException(EncryptionException::Code::NoData);
-	CryptoPP::CTR_Mode<CryptoPP::AES>::Encryption encryptor(data.m_key,
-		data.m_key.size(), data.m_iv);
-	encryptor.ProcessData(*data.m_data, *data.m_data, data.m_data->size());
+	AESEncrypt((char*)data.m_data->data(), (char*)data.m_data->data(), 
+		data.m_data->size(),data.m_data->size(), data.m_key, data.m_iv);
 }
 
 void SecureHelpers::AESDecrypt(AESData& data)
 {
-	CryptoPP::CTR_Mode<CryptoPP::AES>::Decryption decryptor(data.m_key,
-		data.m_key.size(), data.m_iv);
-	decryptor.ProcessData(*data.m_data, *data.m_data, data.m_data->size());
+	AESDecrypt((char*)data.m_data->data(), (char*)data.m_data->data(),
+		data.m_data->size(), data.m_data->size(), data.m_key, data.m_iv);
+}
+
+void SecureHelpers::AESDecrypt(char * dest,
+	const char * src, 
+	std::size_t dSize,
+	std::size_t sSize,
+	const CryptoPP::SecByteBlock& key,
+	const CryptoPP::SecByteBlock& iv)
+{
+	if (dSize < sSize)
+	{
+		cg::Logger::LogError("The destination size is to small.");
+		throw EncryptionException(EncryptionException::Code::BadMem);
+	}
+	CryptoPP::CTR_Mode<CryptoPP::AES>::Decryption decryptor(key,
+		key.size(), iv);
+	decryptor.ProcessData((byte*)dest, (byte*)src, dSize);
 }
 
 CryptoPP::SecByteBlock SecureHelpers::MakeAESKey()
@@ -255,7 +294,27 @@ bool SecureHelpers::ValidateRSAKeys(KeyPair & keys)
 		&& together;
 }
 
+std::string EncryptionException::What() const
+{
+	return ToString();
+}
 
+std::string EncryptionException::ToString() const
+{
+	switch (m_code)
+	{
+	case cg::EncryptionException::BadIv:
+		return "The IV is invalid.";
+	case cg::EncryptionException::BadKey:
+		return "The Key is invalid.";
+	case cg::EncryptionException::NoData:
+		return "There is no data to encrypt.";
+	case cg::EncryptionException::AlreadyExists:
+		return "The store location already exists.";
+	default:
+		return "Unknown issue.";
+	}
+}
 
 }
 

@@ -23,7 +23,7 @@ public:
 	\tparam T An object with .data() and .size().
 	\param data The place to read, and store the data.*/
 	template<typename T>
-	inline void TransformT(T& data)
+	inline void Transform(T& data)
 	{
 		this->Transform(data.data(), data.size());
 	}
@@ -45,9 +45,64 @@ public:
 	\param dest The place to store the data.
 	\param src The place to read the data from.*/
 	template<typename T,typename Y>
-	inline void TransformT(T& dest, const Y& src)
+	inline std::enable_if_t<!std::is_fundamental<Y>::value,void>
+		Transform(T& dest, const Y& src)
 	{
 		this->Transform(dest.data(),src.data(), dest.size(), src.size());
+	}
+	/**Transform with any set of aprameters as log as there is an overload for
+	them.
+	
+	\return A future with the result.*/
+	template<typename...Args>
+	inline void AsyncTransform(Args...args)
+	{
+		return std::async(std::launch::async, [&]() {
+			this->Transform(std::forward<Args>(args)...);
+		});
+	}
+	/**Do a transformation, but return an ArrayView<char> instead of using
+	parameters.
+
+	\param dSize The size of the detination memory.
+	\tparam Y Something with a .data() const and .size() const to read from.
+	\tparam T Something that can be constructed with a char* and size_t.
+	\return An object of type T with the results.*/
+	template<typename T, typename Y>
+	inline T TransformView(Y& src, std::size_t dSize)
+	{
+		char* data = new char[dSize];
+		Transform(data, src.data(), dSize, src.size());
+		return T(data, dSize);
+	}
+	/**Do a transformation, but return an ArrayView<char> instead of using
+	parameters.
+
+	\param dSize The size of the detination memory.
+	\param src The source of data.
+	\param sSize The size of the source.
+	\tparam T Something that can be constructed with a char* and size_t.
+	\return An object of type T with the results.*/
+	template<typename T>
+	inline T TransformView(const char* src, 
+		std::size_t sSize, 
+		std::size_t dSize)
+	{
+		char* data = new char[dSize];
+		Transform(data, src, dSize, sSize);
+		return T(data, dSize);
+	}
+	/**Transform with any set of aprameters as log as there is an overload for
+	them.
+
+	\tparam T The type of container for returning.
+	\return A future with the result.*/
+	template<typename T, typename...Args>
+	inline std::future<T> AsyncTransformView(Args...args)
+	{
+		return std::async(std::launch::async, [&]() {
+			return this->TransformView<T>(std::forward<Args>(args)...);
+		});
 	}
 };
 

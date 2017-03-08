@@ -28,24 +28,6 @@ public:
 	virtual std::ptrdiff_t Read(char* dest,
 		std::size_t size,
 		std::ptrdiff_t timeout) = 0;
-	/**Read data in async mode.  This will wrap a call to Read into the
-	std::async function and return a future.
-
-	\param dest The place to put the data.
-	\param size The size of the data to read.
-	\param timeout time untill return if the data does not get read. If the
-	implementing class does not timeout (like a file or mem write) then this
-	param should have a default value and be ignored.  The timeout is in micro
-	seconds, Lessthan ZERO = inf timeout.
-	\return A future containing the amount of bytes read.*/
-	inline virtual std::future<std::ptrdiff_t> AsyncRead(char* dest,
-		std::size_t size,
-		std::ptrdiff_t timeout = 0)
-	{
-		return std::async(std::launch::async, [&]() {
-			return this->Read(dest, size, timeout);
-		});
-	}
 	/**Read some data. T must have a member .data()  that will return a
 	pointer to a location to store data. T must also have a member .size()const
 	that will return the size of the data to be stored.
@@ -57,29 +39,20 @@ public:
 	Lessthan ZERO = inf timeout.
 	\return The amount of bytes read.*/
 	template<typename T>
-	inline std::ptrdiff_t ReadT(T & data, std::ptrdiff_t timeout)
+	inline std::ptrdiff_t Read(T & data, std::ptrdiff_t timeout)
 	{
 		return Read(data.data(), data.size(), timeout);
 	}
-	/**Read data in async mode.  This will wrap a call to read into the
-	std::async function and return a future.T must have a member .data() 
-	that will return a pointer to a location to store data. T must also have a
-	member .size() const that will return the size of the data to be stored.
+	/**Read data in async mode. 
 
 	\tparam T An object that has .data()  and .size() const for reading
 	its data.
-	\param data An object of type T that has .data()  and .size() const .
-	\param timeout time untill return if the data does not get read. If the
-	implementing class does not timeout (like a file or mem write) then this
-	param should have a default value and be ignored.  The timeout is in micro
-	seconds, Lessthan ZERO = inf timeout.
 	\return A future containing the amount of bytes written.*/
-	template<typename T>
-	inline std::future<std::ptrdiff_t> AsyncReadT(T & data,
-		std::ptrdiff_t timeout = 0)
+	template<typename...Args>
+	inline std::future<std::ptrdiff_t> AsyncRead(Args&&...args)
 	{
 		return std::async(std::launch::async, [&]() {
-			return this->Read<T>(data, timeout);
+			return this->Read(std::forward<Args>(args)...);
 		});
 	}
 protected:

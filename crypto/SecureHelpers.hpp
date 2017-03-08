@@ -14,10 +14,12 @@
 #include <cryptopp/cryptlib.h>
 #include <cryptopp/secblock.h>
 
+#include "../exception.hpp"
+
 
 namespace cg {
 
-class EncryptionException : public std::exception
+class EncryptionException : public cg::Exception
 {
 public:
 	/**The exception codes.*/
@@ -31,6 +33,8 @@ public:
 		NoData,
 		/**The place to store data already exists.*/
 		AlreadyExists,
+		/**Destination to small*/
+		BadMem,
 
 	};
 	/**Create the Exception
@@ -39,25 +43,12 @@ public:
 		:m_code(code) {};
 	/**Get the message.
 	\return A const char* with the message.*/
-	inline virtual const char* what()
-	{
-		switch (m_code)
-		{
-		case cg::EncryptionException::BadIv:
-			return "The IV is invalid.";
-		case cg::EncryptionException::BadKey:
-			return "The Key is invalid.";
-		case cg::EncryptionException::NoData:
-			return "There is no data to encrypt.";
-		case cg::EncryptionException::AlreadyExists:
-			return "The store location already exists.";
-		default:
-			return "Unknown issue.";
-		}
-	}
+	virtual std::string What() const override;
+	virtual std::string ToString() const override;
 private:
 	/**The message code.*/
 	Code m_code;
+
 };
 
 /**The result of  hash operation.*/
@@ -143,28 +134,46 @@ public:
 	static CryptoPP::SecByteBlock GetSaltData(int amt);
 	/**Encrypt some data.
 	\param data The data to encrypt.
-	\param key The key that will be used to encrypt the data.
+	\param key The PublicKey that will be used to encrypt the data.
 	\return The processed data.*/
 	static CryptoPP::SecByteBlock RSAEncrypt(
 		const CryptoPP::SecByteBlock& data,
 		CryptoPP::RSA::PublicKey& key);
+	/**Encrypt some data.
+	\param data The data to encrypt.
+	\param size The size of the data.
+	\param key The PublicKey that will be used to encrypt the data.
+	\return The processed data.*/
+	static CryptoPP::SecByteBlock RSAEncrypt(
+		const char* data,
+		std::size_t size,
+		CryptoPP::RSA::PublicKey& key);
 	/**Dencrypt some data.
 	\param data The data to decrypt.
-	\param key The key that will be used to decrypt the data.
+	\param key The PrivateKey that will be used to decrypt the data.
 	\return The processed data.*/
 	static CryptoPP::SecByteBlock RSADecrypt(
 		const CryptoPP::SecByteBlock& data,
 		CryptoPP::RSA::PrivateKey& key);
+	/**Dencrypt some data.
+	\param data The data to decrypt.
+	\param size The size of the data.
+	\param key The PrivateKey that will be used to decrypt the data.
+	\return The processed data.*/
+	static CryptoPP::SecByteBlock RSADecrypt(
+		const char* data,
+		std::size_t size,
+		CryptoPP::RSA::PrivateKey& key);
 	/**Sign some data.
 	\param data The data to sign.
-	\param key The key that will be used to sign the data.
+	\param key The PrivateKey that will be used to sign the data.
 	\return The processed data.*/
 	static CryptoPP::SecByteBlock RSASHA256Sign(
 		const CryptoPP::SecByteBlock& data,
 		CryptoPP::RSA::PrivateKey& key);
 	/**Verify some data.
 	\param data The data to Verify.
-	\param key The key that will be used to Verify the data.
+	\param key The PublicKey that will be used to Verify the data.
 	\param sig The signature to verify.
 	\return True if the data was verified.*/
 	static bool RSASHA256Verify(
@@ -173,11 +182,24 @@ public:
 		CryptoPP::RSA::PublicKey& key);
 	/**Encrypt with AES. If the key or IV is empty, they will be generated and
 	placed into the data object with the max key and Iv size.
-	\param An AESData object with a key, IV, and data.  THe data will be
+	\param data An AESData object with a key, IV, and data.  THe data will be
 	overwritten with the new data.
 	\param out The place to put the output.*/
 	static void AESEncrypt(const AESData& data,
 		CryptoPP::SecByteBlock& out);
+	/**Encrypt with AES.
+	\param dest The place to put the data.
+	\param src The input data.
+	\param dSize The destination size.
+	\param sSize The src size.
+	\param key The key.
+	\param iv The iv to use.*/
+	static void AESEncrypt(char* dest,
+		const char* src,
+		std::size_t dSize,
+		std::size_t sSize,
+		const CryptoPP::SecByteBlock& key,
+		const CryptoPP::SecByteBlock& iv);
 	/**Encrypt with AES. If the key or IV is empty, they will be generated and
 	placed into the data object with the max key and Iv size.
 	\param An AESData object with a key, IV, and data.  THe data will be
@@ -187,6 +209,19 @@ public:
 	\param An AESData object with a key, IV, and data.  THe data will be
 	overwritten with the new data.*/
 	static void AESDecrypt(AESData& data);
+	/**Decrypt with AES.
+		\param dest The place to put the data.
+	\param src The input data.
+	\param dSize The destination size.
+	\param sSize The src size.
+	\param key The key.
+	\param iv The iv to use.*/
+	static void AESDecrypt(char* dest,
+		const char* src,
+		std::size_t dSize,
+		std::size_t sSize,
+		const CryptoPP::SecByteBlock& key,
+		const CryptoPP::SecByteBlock& iv);
 	/**Generate a random AES key with the max key length.
 	\return The key in the form of a secbyteblock.*/
 	static CryptoPP::SecByteBlock MakeAESKey();
@@ -241,6 +276,8 @@ public:
 	const static int ms_defaultIvSize = 16;
 	/**Default rsa size*/
 	const static int ms_defaultRSASize = 2048;
+	/**The cipher text size for an rsa with default values.*/
+	const static int ms_defaultRSACipherSize = (ms_defaultRSASize / 8);
 };
 
 }

@@ -28,24 +28,6 @@ public:
 	virtual std::ptrdiff_t Write(const char* data,
 		std::size_t size,
 		std::ptrdiff_t timeout) = 0;
-	/**Write data in async mode.  This will wrap a call to Write into the
-	std::async function and return a future.
-
-	\param data A pointer to the data to write.
-	\param size The size of the data to write.
-	\param timeout time untill return if the data does not get sent. If the
-	implementing class does not timeout (like a file or mem write) then this
-	param should have a default value and be ignored.  The timeout is in micro
-	seconds, Lessthan ZERO = inf timeout.
-	\return A future containing the amount of bytes written.*/
-	inline std::future<std::ptrdiff_t> AsyncWrite(const char* data,
-		std::size_t size,
-		std::ptrdiff_t timeout = 0)
-	{
-		return std::async(std::launch::async, [&]() {
-			return this->Write(data,size, timeout);
-		});
-	}
 	/**Write some data. T must have a member .data() const that will return a 
 	pointer to a location to read from. T must also have a member .size() const 
 	that will return the size of the data to be read.
@@ -57,29 +39,18 @@ public:
 	Lessthan ZERO = inf timeout.
 	\return The amount of bytes written.*/
 	template<typename T>
-	inline std::ptrdiff_t WriteT(const T & data, std::ptrdiff_t timeout)
+	inline std::ptrdiff_t Write(const T & data, std::ptrdiff_t timeout)
 	{
 		return Write(data.data(), data.size(), timeout);
 	}
-	/**Write data in async mode.  This will wrap a call to Write into the
-	std::async function and return a future.T must have a member .data() const 
-	that will return a pointer to a location to read from. T must also have a 
-	member .size() const that will return the size of the data to be read.
+	/**Write data in async mode.
 
-	\tparam T An object that has .data() const and .size() const for reading
-	its data.
-	\param data An object of type T that has .data() const and .size() const .
-	\param timeout time untill return if the data does not get sent. If the
-	implementing class does not timeout (like a file or mem write) then this
-	param should have a default value and be ignored.  The timeout is in micro
-	seconds, Lessthan ZERO = inf timeout.
 	\return A future containing the amount of bytes written.*/
-	template<typename T>
-	inline std::future<std::ptrdiff_t> AsyncWriteT(const T & data,
-		std::ptrdiff_t timeout = 0)
+	template<typename...Args>
+	inline std::future<std::ptrdiff_t> AsyncWrite(Args&&...args)
 	{
 		return std::async(std::launch::async, [&]() {
-			return this->Write<T>(data, timeout);
+			return this->Write(std::forward<Args>(args)...);
 		});
 	}
 protected:

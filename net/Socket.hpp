@@ -238,6 +238,12 @@ struct Socket : cg::net::NetworkObject,
 	
 	\return True if the socket is open.*/
 	bool IsOpen();
+
+
+	using cg::Writer::Write;
+	using cg::Writer::AsyncWrite;
+	using cg::Reader::Read;
+	using cg::Reader::AsyncRead;
 protected:/********************************************************************PROTECTED**********/
 	using cg::LogAdaptor<Socket>::EnableLogs;
 	using cg::LogAdaptor<Socket>::LogNote;
