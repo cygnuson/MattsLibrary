@@ -5,27 +5,6 @@ namespace net {
 
 std::size_t Socket::ms_idCounter = 0;
 
-std::ptrdiff_t Socket::Write(const char * data,
-	std::size_t size,
-	std::ptrdiff_t timeout)
-{
-	if (!WriteReady(timeout))
-		return 0;
-
-	return Send(data, size, false);
-}
-
-std::ptrdiff_t Socket::Read(char * dest,
-	std::size_t size,
-	std::ptrdiff_t timeout)
-{
-
-	if (!ReadReady(timeout))
-		return 0;
-
-	return Recv(dest, size, false);
-}
-
 Socket::Socket()
 {
 	m_id = ++ms_idCounter;

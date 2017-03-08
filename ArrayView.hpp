@@ -5,23 +5,42 @@
 namespace cg {
 
 template<typename T>
-struct ArrayView
+struct ArrayViewImpl
 {
+	/**Create a copy data.
+	\param other The other array view.
+	\return The deep copied array view.*/
+	static ArrayViewImpl<T> Copy(const ArrayViewImpl<T>& other)
+	{
+		ArrayViewImpl<T> av(other.size());
+		std::memcpy(av.data(), other.data(), other.size());
+		return av;
+	}
+	/**Create a copy data.
+	\param data The other data to copy.
+	\param size The other data size.
+	\return The deep copied array view.*/
+	static ArrayViewImpl<T> Copy(const T* data, std::size_t size)
+	{
+		ArrayViewImpl<T> av(size);
+		std::memcpy(av.data(),data,size);
+		return av;
+	}
 	/**Create the array view.
 	\param data A pointer to the data.
 	\param size The size of the data in elements.*/
-	ArrayView(T* data = nullptr, std::size_t size = 0)
+	ArrayViewImpl(T* data = nullptr, std::size_t size = 0)
 		:m_data(data), m_size(size) {};
 	/**Create the array view.
 	\param size The size of the data in elements.*/
-	ArrayView(std::size_t size)
+	ArrayViewImpl(std::size_t size)
 		:m_data(new T[size]), m_size(size)
 	{
 		m_destroy = true;
 	};
 	/**Move ctor
 	\param other The thing to move.*/
-	ArrayView(ArrayView&& other)
+	ArrayViewImpl(ArrayViewImpl<T>&& other)
 	{
 		m_data = other.m_data;
 		m_destroy = other.m_destroy;
@@ -32,7 +51,7 @@ struct ArrayView
 	}
 	/**Copy ctor
 	\param other The thing to copy.  Data will be deep copied.*/
-	ArrayView(const ArrayView& other)
+	ArrayViewImpl(const ArrayViewImpl<T>& other)
 	{
 		m_data = new char[other.m_size];
 		m_size = other.m_size;
@@ -41,7 +60,7 @@ struct ArrayView
 	}
 	/**Move assign
 	\param other The thing to move.*/
-	void operator=(ArrayView&& other)
+	void operator=(ArrayViewImpl<T>&& other)
 	{
 		m_data = other.m_data;
 		m_destroy = other.m_destroy;
@@ -50,16 +69,23 @@ struct ArrayView
 		other.m_size = 0;
 		other.m_destroy = false;
 	}
+	/**Operator access.
+	\param index The index to access.
+	\return The element at the index.*/
+	T& operator[](std::size_t index)
+	{
+		return m_data[index];
+	}
 	/**Copy assign
 	\param other The thing  to copy.  Data will not be copied, only the
 	pointer.  This object will not be able to delete the pointer.*/
-	void operator=(const ArrayView& other)
+	void operator=(const ArrayViewImpl<T>& other)
 	{
 		m_data = other.m_data;
 		m_size = other.m_size
 	}
 	/**Destruct and if needed, destroy the data.*/
-	~ArrayView()
+	~ArrayViewImpl()
 	{
 		if (m_destroy)
 			Delete();
@@ -100,5 +126,8 @@ private:
 	bool m_destroy = false;
 
 };
+
+using ArrayView = ArrayViewImpl<char>;
+using ConstArrayView = ArrayViewImpl<const char>;
 
 }

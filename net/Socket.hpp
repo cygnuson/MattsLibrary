@@ -27,7 +27,7 @@ socket is locked, any lists it is inside of should also be locked.  This
 will ensure that while the reference to the socket is alive, it will stay
 alive as long as intented.*/
 struct Socket : cg::net::NetworkObject,
-	public cg::LogAdaptor<Socket>, public cg::Writer, public cg::Reader
+	public cg::LogAdaptor<Socket>
 {
 	/**************************************************************************ALIAS/TYPDEF/CONST*/
 	/**The socket lock type.*/
@@ -87,32 +87,6 @@ struct Socket : cg::net::NetworkObject,
 	void Lock() const;
 	/**Unlock the socket manually.*/
 	void Unlock() const;
-	/**Write some data to the object.  If Ready() returned true before this
-	call, the timeout should never be reached sense this object should return
-	immediatly.
-	\param data A pointer to the data to write.
-	\param size The size of the data to write.
-	\param timeout time untill return if the data does not get sent. If the
-	implementing class does not timeout (like a file or mem write) then this
-	param should have a default value and be ignored.  The timeout is in micro
-	seconds.
-	\return The amount of bytes written.*/
-	virtual std::ptrdiff_t Write(const char * data,
-		std::size_t size,
-		std::ptrdiff_t timeout) override;
-	/**Read some data from the object.  If Ready() returned true before this
-	call, the timeout should never be reached sense this object should return
-	immediatly.
-	\param dest The place to put the data.
-	\param size The size of the data to read.
-	\param timeout time untill return if the data does not get read. If the
-	implementing class does not timeout (like a file or mem write) then this
-	param should have a default value and be ignored.  The timeout is in micro
-	seconds.
-	\return The amount of bytes read.*/
-	virtual std::ptrdiff_t Read(char * dest,
-		std::size_t size,
-		std::ptrdiff_t timeout) override;
 	/**Check and see if the socket has data available.
 	\param timeout The amount of time to wait untill returning a false signal.
 	The time units are in microseconds.  A timeout of 0 will not block at all.
@@ -238,12 +212,6 @@ struct Socket : cg::net::NetworkObject,
 	
 	\return True if the socket is open.*/
 	bool IsOpen();
-
-
-	using cg::Writer::Write;
-	using cg::Writer::AsyncWrite;
-	using cg::Reader::Read;
-	using cg::Reader::AsyncRead;
 protected:/********************************************************************PROTECTED**********/
 	using cg::LogAdaptor<Socket>::EnableLogs;
 	using cg::LogAdaptor<Socket>::LogNote;

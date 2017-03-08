@@ -19,22 +19,17 @@ public:
 	\param keys The pair of keys.*/
 	RSADecryptFilter(cg::KeyPair keys)
 		:m_key(keys.m_private) {};
-	/**Transform some data.
-	
-	\param dest The place to put the transformed data.
-	\param src The place to read data.
-	\param dSize The size of the destination.
-	\param sSize The size of the source data.*/
-	inline virtual void Transform(char * dest,
-		const char * src,
-		std::size_t dSize,
-		std::size_t sSize) override
+	/**Covnert data from one place and store to another.  Dest and source may
+	be the same, but may not overlap if they are different pointers.
+	\param src The place to read the data from.
+	\param size The size of the data destination.
+	\return An array view with the converted data.*/
+	virtual ArrayView Transform(const char* src, std::size_t size) override
 	{
-		auto ret = cg::SecureHelpers::RSADecrypt(src, sSize, m_key);
-		if (dSize < ret.size())
-			cg::Logger::LogError("The desination size is too small.");
-
-		std::memcpy(dest, ret.data(), ret.size());
+		auto ret = cg::SecureHelpers::RSADecrypt(src, size, m_key);
+		ArrayView av(ret.size());
+		std::memcpy(av.data(), ret.data(), ret.size());
+		return av;
 	}
 private:
 	/**A pointer to the key. might be public, might be a private key.*/
@@ -55,22 +50,17 @@ public:
 	\param keys The pair of keys.*/
 	RSAEncryptFilter(cg::KeyPair keys)
 		:m_key(keys.m_public) {};
-	/**Transform some data.
-
-	\param dest The place to put the transformed data.
-	\param src The place to read data.
-	\param dSize The size of the destination.
-	\param sSize The size of the source data.*/
-	inline virtual void Transform(char * dest,
-		const char * src,
-		std::size_t dSize,
-		std::size_t sSize) override
+	/**Covnert data from one place and store to another.  Dest and source may
+	be the same, but may not overlap if they are different pointers.
+	\param src The place to read the data from.
+	\param size The size of the data destination.
+	\return An array view with the converted data.*/
+	virtual ArrayView Transform(const char* src, std::size_t size) override
 	{
-		auto ret = cg::SecureHelpers::RSAEncrypt(src, sSize, m_key);
-		if (dSize < ret.size())
-			cg::Logger::LogError("The desination size is too small.");
-
-		std::memcpy(dest, ret.data(), ret.size());
+		auto ret = cg::SecureHelpers::RSAEncrypt(src, size, m_key);
+		ArrayView av(ret.size());
+		std::memcpy(av.data(), ret.data(), ret.size());
+		return av;
 	}
 private:
 	/**A pointer to the key. might be public, might be a private key.*/
