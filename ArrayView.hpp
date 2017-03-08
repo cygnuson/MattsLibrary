@@ -23,7 +23,7 @@ struct ArrayViewImpl
 	static ArrayViewImpl<T> Copy(const T* data, std::size_t size)
 	{
 		ArrayViewImpl<T> av(size);
-		std::memcpy(av.data(),data,size);
+		std::memcpy(av.data(), data, size);
 		return av;
 	}
 	/**Create the array view.
@@ -53,10 +53,18 @@ struct ArrayViewImpl
 	\param other The thing to copy.  Data will be deep copied.*/
 	ArrayViewImpl(const ArrayViewImpl<T>& other)
 	{
-		m_data = new char[other.m_size];
-		m_size = other.m_size;
-		std::memcpy(m_data, other.m_data, m_size);
-		m_destroy = true;
+		if (other.m_destroy)
+		{
+			m_data = new char[other.m_size];
+			m_size = other.m_size;
+			std::memcpy(m_data, other.m_data, m_size);
+			m_destroy = true;
+		}
+		else
+		{
+			m_data = other.m_data;
+			m_size = other.m_size;
+		}
 	}
 	/**Move assign
 	\param other The thing to move.*/

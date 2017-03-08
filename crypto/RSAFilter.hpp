@@ -1,4 +1,4 @@
-
+#pragma once
 
 #include "SecureHelpers.hpp"
 #include "../Filter.hpp"
@@ -65,6 +65,34 @@ public:
 private:
 	/**A pointer to the key. might be public, might be a private key.*/
 	CryptoPP::RSA::PublicKey m_key;
+};
+
+class RSASignFilter : public cg::Filter
+{
+public:
+	/**Covnert data from one place and store to another.  Dest and source may
+	be the same, but may not overlap if they are different pointers.
+	\param src The place to read the data from.
+	\param size The size of the data destination.
+	\return An array view with the converted data.*/
+	virtual ArrayView Transform(const char* src, std::size_t size) override
+	{
+		return ArrayView();
+	}
+};
+
+class RSAVerifyFilter : public cg::Filter
+{
+public:
+	/**Covnert data from one place and store to another.  Dest and source may
+	be the same, but may not overlap if they are different pointers.
+	\param src The place to read the data from.
+	\param size The size of the data destination.
+	\return An array view with the converted data.*/
+	virtual ArrayView Transform(const char* src, std::size_t size) override
+	{
+		return ArrayView();
+	}
 };
 
 }

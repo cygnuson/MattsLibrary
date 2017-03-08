@@ -1,4 +1,4 @@
-
+#pragma once
 #include "SecureHelpers.hpp"
 #include "../Filter.hpp"
 

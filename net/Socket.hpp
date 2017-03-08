@@ -87,6 +87,12 @@ struct Socket : cg::net::NetworkObject,
 	void Lock() const;
 	/**Unlock the socket manually.*/
 	void Unlock() const;
+	/**Get a scope-based lock for the socket.
+	\return A ScopeLock for this socket.*/
+	inline auto ScopeLock()
+	{
+		return m_lock.LockGuard();
+	}
 	/**Check and see if the socket has data available.
 	\param timeout The amount of time to wait untill returning a false signal.
 	The time units are in microseconds.  A timeout of 0 will not block at all.
