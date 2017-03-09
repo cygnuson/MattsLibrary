@@ -70,6 +70,10 @@ struct ArrayViewImpl
 	\param other The thing to move.*/
 	void operator=(ArrayViewImpl<T>&& other)
 	{
+		/*make sure to delete our current data if needed.*/
+		if (m_destroy)
+			Delete();
+
 		m_data = other.m_data;
 		m_destroy = other.m_destroy;
 		m_size = other.m_size;
@@ -89,8 +93,7 @@ struct ArrayViewImpl
 	pointer.  This object will not be able to delete the pointer.*/
 	void operator=(const ArrayViewImpl<T>& other)
 	{
-		m_data = other.m_data;
-		m_size = other.m_size
+		*this = Copy(other);
 	}
 	/**Destruct and if needed, destroy the data.*/
 	~ArrayViewImpl()

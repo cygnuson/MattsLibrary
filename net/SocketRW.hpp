@@ -14,13 +14,22 @@ class SocketRW :
 	public cg::LogAdaptor<SocketRW>
 {
 public:
-	/**Create the socket reader writer.
+	/**Create the socket reader writer.  This object will own its filters and
+	they will be clened up on destruction.
 	\param sock An address to the socket to use for writing and reading.
 	\param writeFilter The filter to be applied to written data.
 	\param readFilter The filter ot be applied to the read data.*/
 	SocketRW(Socket* sock,
 		Filter* writeFilter,
 		Filter* readFilter);
+	/**Destroy and clean up*/
+	~SocketRW()
+	{
+		if (m_readFilter)
+			delete m_readFilter;
+		if (m_writeFilter)
+			delete m_writeFilter;
+	}
 	/**Move*/
 	SocketRW(SocketRW&& other);
 	/**Move*/

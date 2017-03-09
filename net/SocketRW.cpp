@@ -51,7 +51,7 @@ std::ptrdiff_t SocketRW::Write(const char * data,
 	else
 	{
 		auto tData =
-			m_writeFilter->Transform(data, size);
+			m_writeFilter->TransformCopy(data, size);
 
 		return m_socket->Send(tData.data(), tData.size(), true);
 	}
@@ -73,9 +73,7 @@ std::ptrdiff_t SocketRW::Read(char * dest,
 	else
 	{
 		auto ret = m_socket->Recv(dest, size, true);
-		auto tData =
-			m_readFilter->Transform(dest, size);
-		std::memcpy(dest, tData.data(), size);
+		m_readFilter->Transform(dest, size);
 		return ret;
 	}
 }
