@@ -9,6 +9,11 @@ namespace cg {
 class RSADecryptFilter : public cg::Filter
 {
 public:
+	/**always returns tre because the size will always change.*/
+	virtual bool SizeChanges() const
+	{
+		return true;
+	}
 	/**Create the filter.
 
 	\param key The private key.*/
@@ -49,6 +54,11 @@ private:
 class RSAEncryptFilter : public cg::Filter
 {
 public:
+	/**always returns tre because the size will always change.*/
+	virtual bool SizeChanges() const
+	{
+		return true;
+	}
 	/**Create the filter.
 
 	\param key The public key.*/

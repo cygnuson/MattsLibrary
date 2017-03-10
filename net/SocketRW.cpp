@@ -56,26 +56,33 @@ std::ptrdiff_t SocketRW::Write(const char * data,
 		return m_socket->Send(tData.data(), tData.size(), true);
 	}
 }
-
-std::ptrdiff_t SocketRW::Read(char * dest,
-	std::size_t sizep,
+cg::ArrayView SocketRW::Read(std::size_t expectedSize,
 	std::ptrdiff_t timeout)
 {
 	CheckAndReport();
 	if (!ReadReady(timeout))
-		return 0;
+		return ArrayView();
 
-	auto sLock = m_socket->ScopeLock(); 
-	std::uint64_t size = 0;
-	m_socket->Recv((char*)&size, sizeof(size), true);
-	if (!m_readFilter)
-		return m_socket->Recv(dest, size, true);
-	else
+	auto sLock = m_socket->ScopeLock();
+	std::int64_t size = 0;
+	auto got = m_socket->Recv((char*)&size, sizeof(size), true);
+	if (got == -1)
 	{
-		auto ret = m_socket->Recv(dest, size, true);
-		m_readFilter->Transform(dest, size);
-		return ret;
+		/*socket closed normally.*/
+		LogNote(3, __FUNCSTR__, "Socket closed normally.");
+		throw NetworkException(Error::NotConnected);
 	}
+	cg::ArrayView av(size);
+	m_socket->Recv(av.data(), size, true);
+	if (m_readFilter)
+	{
+		if (m_readFilter->SizeChanges())
+			av = m_readFilter->TransformCopy(av.data(), size);
+		else
+			m_readFilter->Transform(av.data(), size);
+
+	}
+	return av;
 }
 
 bool SocketRW::ReadReady(std::ptrdiff_t timeout) const
@@ -92,7 +99,7 @@ bool SocketRW::WriteReady(std::ptrdiff_t timeout) const
 
 void SocketRW::CheckAndReport() const
 {
-	if (!((const Socket*) m_socket))
+	if (!((const Socket*)m_socket))
 	{
 		LogError("There is not set socket. This object was moved most ",
 			"likely.");

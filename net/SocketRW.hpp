@@ -50,20 +50,16 @@ public:
 	virtual std::ptrdiff_t Write(const char * data,
 		std::size_t size,
 		std::ptrdiff_t timeout = -1) override;
-	/**Read some data from the object.  If Ready() returned true before this
-	call, the timeout should never be reached sense this object should return
-	immediatly.
-	\param dest The place to put the data.
-	\param size DOES NOT EFFECT! The size of the data is included in the send
-	function.
+	/**Read from the socket. Will determine size automatically.
 	\param timeout time untill return if the data does not get read. If the
 	implementing class does not timeout (like a file or mem write) then this
 	param should have a default value and be ignored.  The timeout is in micro
 	seconds.
-	\return The amount of bytes read.*/
-	virtual std::ptrdiff_t Read(char * dest,
-		std::size_t size = 0,
-		std::ptrdiff_t timeout = -1) override;
+	\param expectedSize Does not matter for this class.
+	\return an ArrayView with data.  An ArrayView with nullptr and 0 size if
+	no bytes are read.*/
+	cg::ArrayView Read(std::size_t expectedSize = 0, 
+		std::ptrdiff_t timeout = -1);
 	/**Check and see if the socket has data available.
 	\param timeout The amount of time to wait untill returning a false signal.
 	The time units are in microseconds.  A timeout of 0 will not block at all.

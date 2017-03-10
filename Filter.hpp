@@ -10,6 +10,9 @@ namespace cg {
 class Filter
 {
 public:
+	/**Determine if the size will change when applied.
+	\return True if the size will change.*/
+	virtual bool SizeChanges() const = 0;
 	/**Virtual destructor*/
 	virtual ~Filter() {};
 	/**Covnert data from one place and store to another.  Dest and source may

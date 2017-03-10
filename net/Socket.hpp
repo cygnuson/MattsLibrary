@@ -147,7 +147,7 @@ struct Socket : cg::net::NetworkObject,
 	socket is open still, or < 0 if the socket was closed properly.
 	\throws cg::net::NetworkException A network exception is thrown if the
 	underlying socket infrastructure throws an exception.*/
-	std::size_t Recv(char* data,
+	std::ptrdiff_t Recv(char* data,
 		std::size_t size,
 		bool block,
 		socklen_t flags = 0);
@@ -164,7 +164,7 @@ struct Socket : cg::net::NetworkObject,
 	nothing was sent but is still open.
 	\throws cg::net::NetworkException A network exception is thrown if the
 	underlying socket infrastructure throws an exception.*/
-	std::size_t Send(const char* data,
+	std::ptrdiff_t Send(const char* data,
 		std::size_t size,
 		bool block,
 		socklen_t flags = 0);

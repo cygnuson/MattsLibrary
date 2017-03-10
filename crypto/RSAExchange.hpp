@@ -29,12 +29,11 @@ inline bool GetPublicKey(cg::net::Socket& socket,
 	CryptoPP::RSA::PublicKey& dest)
 {
 	cg::net::SocketRW reader(&socket);
-	char data[1024];
-	auto size = reader.Read(data);
-	CryptoPP::ArraySource as((byte*)data, size, true);
+	auto av = reader.Read();
+	CryptoPP::ArraySource as((byte*)av.data(), av.size(), true);
 	dest.Load(as);
-	cg::Logger::LogNote(3, "Got the RSA public key (", size, " bytes) from",
-		" socket ", socket.Id(), ".");
+	cg::Logger::LogNote(3, "Got the RSA public key (", av.size(), 
+		" bytes) from socket ", socket.Id(), ".");
 	bool validated = dest.Validate(CryptoPP::RandomNumberGenerator(), 3);
 	if (validated)
 	{

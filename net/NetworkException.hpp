@@ -64,6 +64,12 @@ public:
 	operating system call to strerror_s (linux) or FormatMessage (windows).
 	\sa cg::net::NetworkError*/
 	virtual std::string ToString() const;
+	/**Get the code.
+	\return The code for the exception.*/
+	inline Error GetCode() const
+	{
+		return m_error;
+	}
 private:/**********************************************************************PRIVATE************/
 	/** The error code.*/
 	const Error m_error;

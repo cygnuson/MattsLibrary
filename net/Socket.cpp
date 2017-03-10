@@ -348,6 +348,7 @@ bool Socket::IsOpen()
 	char byte = 0;
 	Lock();
 	socklen_t got = recv(m_socket, &byte, 1, MSG_PEEK);
+	Unlock();
 	if (got == 0)
 	{
 		return false;
@@ -396,7 +397,7 @@ addrinfo* Socket::MakeAddress(std::string && address,
 	return resPtr;
 }
 
-std::size_t Socket::Recv(char* data,
+std::ptrdiff_t Socket::Recv(char* data,
 	std::size_t size,
 	bool block,
 	socklen_t flags)
@@ -407,7 +408,7 @@ std::size_t Socket::Recv(char* data,
 		ReadReady(-1);
 	if (size == 0)
 	{
-		LogError(__FUNCSTR__, "The size is zero, will send nothing.");
+		LogError(__FUNCSTR__, "The size is zero, will recv nothing.");
 	}
 
 	socklen_t got =
@@ -433,7 +434,7 @@ std::size_t Socket::Recv(char* data,
 	}
 	return got;
 }
-std::size_t Socket::Send(const char* data,
+std::ptrdiff_t Socket::Send(const char* data,
 	std::size_t size,
 	bool block,
 	socklen_t flags)

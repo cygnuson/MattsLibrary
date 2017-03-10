@@ -3,6 +3,7 @@
 #include <future>
 
 #include "LogAdaptor.hpp"
+#include "ArrayView.hpp"
 
 namespace cg {
 
@@ -28,6 +29,14 @@ public:
 	virtual std::ptrdiff_t Write(const char* data,
 		std::size_t size,
 		std::ptrdiff_t timeout) = 0;
+	/**Write an array view.
+	\param av The array view.
+	\param timeout The timeout. -1 means inf timeout, 0 means no timeout.*/
+	virtual void Write(const cg::ArrayView& av,
+		std::ptrdiff_t timeout)
+	{
+		Write(av.data(), av.size(),timeout);
+	}
 	/**Write some data. T must have a member .data() const that will return a 
 	pointer to a location to read from. T must also have a member .size() const 
 	that will return the size of the data to be read.

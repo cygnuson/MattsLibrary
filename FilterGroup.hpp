@@ -11,6 +11,15 @@ namespace cg {
 class FilterGroup : public cg::Filter
 {
 public:
+	/**Determine if the size will change when applying all the filters.*/
+	virtual bool SizeChanges() const
+	{
+		for (std::size_t i = 0; i < m_filters.size(); ++i)
+			if (m_filters[i]->SizeChanges())
+				return true;
+
+		return false;
+	}
 	/**Virtual DTOR, clean up all the filters.*/
 	virtual ~FilterGroup()
 	{

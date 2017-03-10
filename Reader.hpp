@@ -3,6 +3,7 @@
 #include <future>
 
 #include "LogAdaptor.hpp"
+#include "ArrayView.hpp"
 
 namespace cg {
 
@@ -15,19 +16,16 @@ public:
 	no timeout, Lessthan ZERO = inf timeout.
 	\return True if the object is ready to be written to without blocking.*/
 	virtual bool ReadReady(std::ptrdiff_t timeout = 0) const = 0;
-	/**Read some data from the object.  If Ready() returned true before this
-	call, the timeout should never be reached sense this object should return
-	immediatly.
-	\param dest The place to put the data.
-	\param size The size of the data to read.
+	/**Read from the object.
 	\param timeout time untill return if the data does not get read. If the
 	implementing class does not timeout (like a file or mem write) then this
 	param should have a default value and be ignored.  The timeout is in micro
-	seconds, Lessthan ZERO = inf timeout.
-	\return The amount of bytes read.*/
-	virtual std::ptrdiff_t Read(char* dest,
-		std::size_t size,
-		std::ptrdiff_t timeout) = 0;
+	seconds.
+	\param expectedSize The max size to get. Might be less
+	\return an ArrayView with data.  An ArrayView with nullptr and 0 size if
+	no bytes are read.*/
+	virtual cg::ArrayView Read(std::size_t expectedSize,
+		std::ptrdiff_t timeout = -1) = 0;
 	/**Read some data. T must have a member .data()  that will return a
 	pointer to a location to store data. T must also have a member .size()const
 	that will return the size of the data to be stored.

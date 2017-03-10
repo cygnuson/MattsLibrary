@@ -26,6 +26,12 @@ struct ArrayViewImpl
 		std::memcpy(av.data(), data, size);
 		return av;
 	}
+	/**Determine if the ciew is empty or not.
+	\return True if the view is empty and invalid.*/
+	bool Empty() const
+	{
+		return !m_data;
+	}
 	/**Create the array view.
 	\param data A pointer to the data.
 	\param size The size of the data in elements.*/

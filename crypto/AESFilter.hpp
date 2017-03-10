@@ -7,6 +7,14 @@ namespace cg {
 class AESEncryptFilter : public cg::Filter
 {
 public:
+	/**always returns false because the size will never change.*/
+	virtual bool SizeChanges() const
+	{
+		return false;
+	}
+	/**Create it.
+	\param key The key for encryption
+	\param iv The IV for encryption*/
 	AESEncryptFilter(const CryptoPP::SecByteBlock& key,
 		const CryptoPP::SecByteBlock& iv)
 		:m_key(key), m_iv(iv) {}
@@ -27,6 +35,14 @@ private:
 class AESDecryptFilter : public cg::Filter
 {
 public:
+	/**always returns false because the size will never change.*/
+	virtual bool SizeChanges() const
+	{
+		return false;
+	}
+	/**Create it.
+	\param key The key for decryption
+	\param iv The IV for decryption*/
 	AESDecryptFilter(const CryptoPP::SecByteBlock& key,
 		const CryptoPP::SecByteBlock& iv)
 		:m_key(key), m_iv(iv) {}
