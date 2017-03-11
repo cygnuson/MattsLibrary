@@ -24,7 +24,8 @@ public:
 	/**Start a process.
 	\pram args The args to send along as space seperated strings.
 	\return True if the process was started properly.*/
-	virtual void Start(const std::string& args, double updateFPS) = 0;
+	virtual void Start(const std::string& args = "", 
+		double updateFPS = 10) = 0;
 	/**Forward athe output.*/
 	virtual void UpdateOutput() = 0;
 	/**Forward athe output.*/

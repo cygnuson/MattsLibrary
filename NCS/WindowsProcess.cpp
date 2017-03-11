@@ -98,7 +98,6 @@ void Process::UpdateInput()
 		return;
 	if (!m_running)
 		return;
-
 	DWORD written = 0;
 	/*now send the child some input, but dont include the nullterm in the
 	string.*/
@@ -111,6 +110,7 @@ void Process::UpdateInput()
 				1, &written, NULL) == TRUE;
 			if (!writeSuccess)
 				LogError("Could not write to the child.");
+
 			if (written == 0)
 				break;
 		}
@@ -175,7 +175,6 @@ void Process::ClosePipes()
 	CloseHandle(m_readFromChildStdOut);
 	LogNote(2, __FUNCSTR__, "Closed the `Read from child stdout` pipe.");
 }
-
 
 std::string Process::LastError()
 {

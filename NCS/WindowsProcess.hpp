@@ -33,7 +33,6 @@ public:
 	Process(const std::string& path = "");
 	/**Close the process.*/
 	~Process();
-
 	/**Create a string from the last occured windows error.
 	\return A string that is the last occuring error in windows.*/
 	static std::string LastError();
@@ -45,7 +44,8 @@ public:
 	\param updateFPS The amount of times that the input and output will update.
 	Both input and output frames will operate at this fps.
 	\return True if the process was started properly.*/
-	virtual void Start(const std::string& args, double updateFPS = 10);
+	virtual void Start(const std::string& args = "",
+		double updateFPS = 10);
 	/**Forward athe output.*/
 	virtual void UpdateOutput();
 	/**Forward the input.*/
@@ -81,6 +81,7 @@ private:
 	Handle m_writeToChildStdOut;
 	/**read data from the stdin (what is typed into the childs window).*/
 	Handle m_readFromChildStdIn;
+
 };
 
 
