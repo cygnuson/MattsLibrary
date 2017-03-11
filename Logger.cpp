@@ -72,6 +72,19 @@ void Logger::Init(
 	_sShowThread = showThread;
 	_sInited = true;
 }
+void Logger::Init(
+	uint32_t level,
+	std::streambuf* logStrm,
+	bool showTime,
+	bool showThread)
+{
+	std::lock_guard<std::recursive_mutex> lock(_sLogMutex);
+	_sCurrentLevel = level;
+	_sStreams[_sPrimaryLogName] = logStrm;
+	_sShowTime = showTime;
+	_sShowThread = showThread;
+	_sInited = true;
+}
 
 void Logger::ShowTimeStamp(bool set)
 {

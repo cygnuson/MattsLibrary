@@ -353,6 +353,23 @@ std::string StringTogether(Args&&...args)
 }
 
 
+template<typename Str>
+std::string StringTogetherWithSeperatorHelper(Str&& str)
+{
+	return std::string(ToString(str));
+}
+template<typename...Args, typename Str>
+std::string StringTogetherWithSeperatorHelper(Str&& str, Args&&...args)
+{
+	return std::string(ToString(str)) + " " +
+		StringTogetherWithSeperatorHelper(std::forward<Args>(args)...);
+}
+template<typename...Args>
+std::string StringTogetherWithSeperator(Args&&...args)
+{
+	return StringTogetherWithSeperatorHelper(std::forward<Args>(args)...);
+}
+
 class Logger
 {
 public:
@@ -411,6 +428,13 @@ public:
 	static void Init(
 		uint32_t level,
 		std::ostream &primaryLog,
+		bool showTime = true,
+		bool showThread = true);
+	/**Initialize the logging system.  Use bitwise OR to have multiple levels.
+	EG: Init(Level::note | Level::e_Error,&std::cout)*/
+	static void Init(
+		uint32_t level,
+		std::streambuf* primaryLog,
 		bool showTime = true,
 		bool showThread = true);
 	/**Show to logger timestamp.
@@ -573,7 +597,7 @@ void Logger::LogHelper(T&& t)
 {
 	std::lock_guard<std::recursive_mutex> lock(_sLogMutex);
 	std::ostream stream(ActiveLog());
-	stream << ToString(std::forward<T>(t)) << std::flush;
+	stream << ToString(std::forward<T>(t));
 }
 template<typename T, typename...Args>
 void Logger::LogHelper(
@@ -582,7 +606,7 @@ void Logger::LogHelper(
 {
 	std::lock_guard<std::recursive_mutex> lock(_sLogMutex);
 	std::ostream stream(ActiveLog());
-	stream << ToString(t) << std::flush;
+	stream << ToString(t);
 	LogHelper(std::forward<Args>(args)...);
 }
 template<typename...Args>
@@ -632,21 +656,20 @@ void Logger::Log(
 			{
 				ChangeLog(e.first);
 				std::ostream stream(ActiveLog());
-				stream << CurrentThread() << CurrentTime() << label 
-					<< std::flush;
+				stream << CurrentThread() << CurrentTime() << label;
 				LogHelper(std::forward<Args>(args)...);
-				stream << std::endl << std::flush;
+				stream << std::endl;
 			}
 		}
 		else
 		{
 			/*log only the active stream.*/
 			std::ostream stream(ActiveLog());
-			stream << CurrentThread() << CurrentTime() << label << std::flush;
+			stream << CurrentThread() << CurrentTime() << label;
 			LogHelper(std::forward<Args>(args)...);
 			if (level == e_Error)
 				stream << "~~~~~";
-			stream << std::endl << std::flush;
+			stream << std::endl;
 		}
 
 	}

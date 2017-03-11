@@ -55,25 +55,25 @@ void Socket::Lock() const
 {
 	if (m_lock.TryLock())
 	{
-		LogNote(1, __FUNCSTR__, "The socket with id = ", Id(),
-			" is now locked.");
+		/*LogNote(1, __FUNCSTR__, "The socket with id = ", Id(),
+			" is now locked.");*/
 		return;
 	}
-	else
+	/*else
 		LogWarn(__FUNCSTR__, "The mutex is about to be accessed by a thread",
 			" that probably cant lock the mutex (try lock fail). Socket id ",
-			"= ", Id(), " .");
+			"= ", Id(), " .");*/
 
-	LogNote(1, __FUNCSTR__, "Block to lock socket with id = ", Id(),
-		" is now locked.");
+	/*LogNote(1, __FUNCSTR__, "Block to lock socket with id = ", Id(),
+		" is now locked.");*/
 	m_lock.Lock();
 }
 
 void Socket::Unlock() const
 {
 	m_lock.Unlock();
-	LogNote(1, __FUNCSTR__, "The socket with id = ", Id(),
-		" is now unlocked.");
+	/*LogNote(1, __FUNCSTR__, "The socket with id = ", Id(),
+		" is now unlocked.");*/
 }
 void Socket::GetPeerName(sockaddr_storage & addr) const
 {
@@ -142,7 +142,6 @@ bool Socket::ReadReady(std::ptrdiff_t timeout) const
 	int code;
 	fd_set set;
 	FD_ZERO(&set);
-	Lock();
 	FD_SET(m_socket, &set);
 	if (timeout < 0)
 		code = select(((int)m_socket) + 1, &set, 0, 0, nullptr);
@@ -154,7 +153,6 @@ bool Socket::ReadReady(std::ptrdiff_t timeout) const
 		to.tv_usec = timeout % 1000000;
 		code = select(((int)m_socket) + 1, &set, 0, 0, &to);
 	}
-	Unlock();
 	if (code == 0)
 		return false;
 	else if (code == -1)
@@ -174,7 +172,6 @@ bool Socket::WriteReady(std::ptrdiff_t timeout) const
 	int code;
 	fd_set set;
 	FD_ZERO(&set);
-	Lock();
 	FD_SET(m_socket, &set);
 	if (timeout < 0)
 		code = select(((int)m_socket) + 1,  0,&set, 0, nullptr);
@@ -186,7 +183,6 @@ bool Socket::WriteReady(std::ptrdiff_t timeout) const
 		to.tv_usec = timeout % 1000000;
 		code = select(((int)m_socket) + 1,  0,&set, 0, &to);
 	}
-	Unlock();
 	if (code == 0)
 		return false;
 	else if (code == -1)
@@ -345,6 +341,8 @@ bool Socket::Accept(Socket & sock, bool block)
 }
 bool Socket::IsOpen()
 {
+	if (m_id == InvalidId)
+		return false;
 	char byte = 0;
 	Lock();
 	socklen_t got = recv(m_socket, &byte, 1, MSG_PEEK);
@@ -355,9 +353,10 @@ bool Socket::IsOpen()
 	}
 	else if (got == -1)
 	{
-		NetworkException e; //auto numbering
-		LogError(__FUNCSTR__, "Unknown Status. Exception:", e.What());
-		throw e;
+		if (NetworkException::GetErrno() == Error::WouldBlock)
+			return true;
+		else
+			return false;
 	}
 	else
 	{
