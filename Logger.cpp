@@ -8,6 +8,9 @@ Logger::StreamMap		Logger::_sStreams;
 bool					Logger::_sInited = false;
 bool					Logger::_sEnabled = true;
 bool					Logger::_sUsingColor = true;
+bool					Logger::_sSuppressNextTimeOutput = false;
+bool					Logger::_sSupressNextThreadOutput = false;
+bool					Logger::_sSupressNextLocalOutput = false;
 bool					Logger::_sShowTime = true;
 bool					Logger::_sShowThread = true;
 bool					Logger::_sCloneAllStreams = false;
@@ -63,8 +66,8 @@ std::string Logger::CurrentThread()
 	if (_sShowThread)
 	{
 		std::stringstream ss;
-		ss << "Thread: " << std::setw(6) << std::setfill(' ')
-			<< std::this_thread::get_id() << " " << std::flush;
+		ss << "[Thread:" << std::setw(6) << std::setfill(' ')
+			<< std::this_thread::get_id() << "]" << std::flush;
 		return ss.str();
 	}
 	else
@@ -163,6 +166,21 @@ void Logger::Init(
 	_sShowThread = showThread;
 	UseColor(useColor);
 	_sInited = true;
+}
+
+void Logger::SupressNextTimeOutput()
+{
+	_sSuppressNextTimeOutput = true;
+}
+
+void Logger::SupressNextThreadOutput()
+{
+	_sSupressNextThreadOutput = true;
+}
+
+void Logger::SupressNextLocalOutput()
+{
+	_sSupressNextLocalOutput = true;
 }
 
 void Logger::ShowTimeStamp(bool set)

@@ -7,7 +7,6 @@ uint16_t NetLog::ms_port;
 std::string NetLog::ms_name;
 bool NetLog::ms_isInit = false;
 cg::net::Socket* NetLog::ms_client = nullptr;
-std::stringstream NetLog::ms_logStream;
 
 void NetLog::Init(const std::string & name,
 	uint16_t port)
@@ -24,7 +23,6 @@ void NetLog::Init(const std::string & name,
 		cg::Logger::LogError(__FUNCSTR__, "Could not connect to the debug",
 			" server. Exception: ", e.What());
 	}
-	cg::Logger::AddLog("NETLOGGERTEMP",ms_logStream.rdbuf());
 	ms_isInit = true;
 }
 

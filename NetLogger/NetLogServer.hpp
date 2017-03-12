@@ -25,27 +25,13 @@ public:
 	\param av The data to print as array view. Will be deserialized to a
 	NetLoggerMessage.*/
 	void PrintMsg(const cg::ArrayView& av);
-	/**Set a logger level to have acertian color.
-	\param fore The foreground color.
-	\param back The background color.*/
-	void RegisterColor(cg::Logger::Level level,
-		unsigned int fore,
-		unsigned int back);
 private:
-	/**Set the output color (linux or windows)
-	\param fore The foreground color.
-	\param back The background color.*/
-	void ColorStart(unsigned int fore, unsigned  int back);
-	/**Set the color back to normal.*/
-	void ColorEnd();
 	/**The socket to listen for connections on.*/
 	cg::net::Socket m_serverSocket;
 	/**True to keep running.*/
 	bool m_run = false;
 	/**A list of clients.*/
 	std::list<cg::net::Socket> m_clients;
-	/**Color map.  The pair is foreground(first) and background(second)*/
-	std::map<cg::Logger::Level, std::pair<int,int>> m_colorMap;
 };
 
 }

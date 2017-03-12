@@ -397,6 +397,9 @@ private:
 	static bool                 _sEnabled;
 	static bool	                _sUsingColor;
 	static bool                 _sShowTime;
+	static bool                 _sSupressNextThreadOutput;
+	static bool                 _sSuppressNextTimeOutput;
+	static bool                 _sSupressNextLocalOutput;
 	static bool                 _sShowThread;
 	static bool                 _sCloneAllStreams;
 	const static char           _sErrorLabel[8];
@@ -425,12 +428,6 @@ private:
 	static std::streambuf* ActiveLog();
 	/**Get the streambuf for the Primary log.*/
 	static std::streambuf* PrimaryLog();
-	/**Get the current time.
-	\return A string that is the current time.*/
-	static std::string CurrentTime();
-	/**Get the current thread id.
-	\return A string that is the current threads id.*/
-	static std::string CurrentThread();
 public:
 	/**Initialize the logging system.  Use bitwise OR to have multiple levels.
 	EG: Init(Level::note | Level::e_Error,&std::cout)*/
@@ -448,9 +445,21 @@ public:
 		bool showTime = true,
 		bool showThread = true,
 		bool useColor = true);
+	/**Supress the next thread output only once.*/
+	static void SupressNextTimeOutput();
+	/**Supress the next time output only once.*/
+	static void SupressNextThreadOutput();
+	/**Supress the next [LOCAL] output only.*/
+	static void SupressNextLocalOutput();
 	/**Set the status of the colorization of the text.
 	\param use True to use color.*/
 	static void UseColor(bool use);
+	/**Get the current time.
+	\return A string that is the current time.*/
+	static std::string CurrentTime();
+	/**Get the current thread id.
+	\return A string that is the current threads id.*/
+	static std::string CurrentThread();
 	/**Start a colorized output (lin or win). Color output only works when the
 	current log is set to cout.
 	\param level The level to colorize.*/
@@ -643,10 +652,6 @@ void Logger::Log(
 	if ((level & _sCurrentLevel) > 0)
 	{
 		std::string label;
-		if (level == e_Error)
-		{
-			label = "~~~~~";
-		}
 		switch (level)
 		{
 		case Logger::Level::e_Warning:
@@ -685,7 +690,19 @@ void Logger::Log(
 					out.rdbuf(_sDefaultCoutBuffer);
 					StartColor(level);
 				}
-				stream << CurrentThread() << CurrentTime() << label;
+				stream << label;
+				if (!_sSupressNextLocalOutput)
+					stream << "[LOCAL]";
+				else
+					_sSupressNextLocalOutput = false;
+				if (!_sSupressNextThreadOutput)
+					stream << CurrentThread();
+				else
+					_sSupressNextThreadOutput = false;
+				if(!_sSuppressNextTimeOutput)
+					stream << CurrentTime();
+				else
+					_sSuppressNextTimeOutput = false;
 				LogHelper(std::forward<Args>(args)...);
 				stream << std::endl;
 				if (stream.rdbuf() == _sDefaultCoutBuffer && _sUsingColor)
@@ -711,10 +728,20 @@ void Logger::Log(
 				out.rdbuf(_sDefaultCoutBuffer);
 				StartColor(level);
 			}
-			stream << CurrentThread() << CurrentTime() << label;
+			stream << label;
+			if (!_sSupressNextLocalOutput)
+				stream << "[LOCAL]";
+			else
+				_sSupressNextLocalOutput = false;
+			if (!_sSupressNextThreadOutput)
+				stream << CurrentThread();
+			else
+				_sSupressNextThreadOutput = false;
+			if (!_sSuppressNextTimeOutput)
+				stream << CurrentTime();
+			else
+				_sSuppressNextTimeOutput = false;
 			LogHelper(std::forward<Args>(args)...);
-			if (level == e_Error)
-				stream << "~~~~~";
 			stream << std::endl;
 			if (stream.rdbuf() == _sDefaultCoutBuffer && _sUsingColor)
 			{

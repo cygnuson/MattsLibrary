@@ -24,6 +24,12 @@ public:
 	std::string m_text;
 	/**A debug level code.*/
 	cg::Logger::Level m_level;
+	/**The thread ID of the caller.*/
+	std::string m_threadId;
+	/**the time of the log entry.*/
+	std::string m_time;
+	/**The name of the client sending the message.*/
+	std::string m_name;
 };
 
 }

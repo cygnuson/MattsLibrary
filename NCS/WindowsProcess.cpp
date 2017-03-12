@@ -29,6 +29,8 @@ Process::~Process()
 {
 	UpdateOutput();
 	UpdateInput();
+	m_running = false;
+	Wait();
 	ClosePipes();
 }
 
