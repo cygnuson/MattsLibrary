@@ -12,6 +12,8 @@
 #include <thread>
 #include <cctype>
 
+#include "Colors.hpp"
+
 #define __FLN__ cg::StringTogether("\n",__FILE__,":",__LINE__,"\n")
 #define __FUNCSTR__ cg::StringTogether(__func__,": ")
 
@@ -393,6 +395,7 @@ private:
 	static StreamMap            _sStreams;
 	static bool                 _sInited;
 	static bool                 _sEnabled;
+	static bool	                _sUsingColor;
 	static bool                 _sShowTime;
 	static bool                 _sShowThread;
 	static bool                 _sCloneAllStreams;
@@ -404,6 +407,12 @@ private:
 	static std::string          _sPrimaryLogName;
 	static std::string          _sActiveLogName;
 	static std::recursive_mutex _sLogMutex;
+	static std::streambuf*      _sDefaultCoutBuffer;
+	static std::pair<int, int>  _sErrorColor;
+	static std::pair<int, int>  _sWarnColor;
+	static std::pair<int, int>  _sNote1Color;
+	static std::pair<int, int>  _sNote2Color;
+	static std::pair<int, int>  _sNote3Color;
 
 	static bool sanity_check();
 
@@ -429,14 +438,25 @@ public:
 		uint32_t level,
 		std::ostream &primaryLog,
 		bool showTime = true,
-		bool showThread = true);
+		bool showThread = true,
+		bool useColor = true);
 	/**Initialize the logging system.  Use bitwise OR to have multiple levels.
 	EG: Init(Level::note | Level::e_Error,&std::cout)*/
 	static void Init(
 		uint32_t level,
 		std::streambuf* primaryLog,
 		bool showTime = true,
-		bool showThread = true);
+		bool showThread = true,
+		bool useColor = true);
+	/**Set the status of the colorization of the text.
+	\param use True to use color.*/
+	static void UseColor(bool use);
+	/**Start a colorized output (lin or win). Color output only works when the
+	current log is set to cout.
+	\param level The level to colorize.*/
+	static void StartColor(cg::Logger::Level level);
+	/**End a colorized output.*/
+	static void EndColor();
 	/**Show to logger timestamp.
 	\param set True to show the timestamp.*/
 	static void ShowTimeStamp(bool set);
@@ -656,20 +676,54 @@ void Logger::Log(
 			{
 				ChangeLog(e.first);
 				std::ostream stream(ActiveLog());
+				std::stringstream ss;
+				if (stream.rdbuf() == _sDefaultCoutBuffer && _sUsingColor)
+				{
+					/*disable cout temproarily so that it will be exclusive to this message.*/
+					std::ostream& out = ss;
+					std::cout.rdbuf(ss.rdbuf());
+					out.rdbuf(_sDefaultCoutBuffer);
+					StartColor(level);
+				}
 				stream << CurrentThread() << CurrentTime() << label;
 				LogHelper(std::forward<Args>(args)...);
 				stream << std::endl;
+				if (stream.rdbuf() == _sDefaultCoutBuffer && _sUsingColor)
+				{
+					EndColor();
+					/*put cout back.*/
+					std::cout.rdbuf(_sDefaultCoutBuffer);
+					/*write anything that was intented for cout while it was disabled.*/
+					std::cout << ss.str();
+				}
 			}
 		}
 		else
 		{
 			/*log only the active stream.*/
 			std::ostream stream(ActiveLog());
+			std::stringstream ss;
+			if (stream.rdbuf() == _sDefaultCoutBuffer && _sUsingColor)
+			{
+				/*disable cout temproarily so that it will be exclusive to this message.*/
+				std::ostream& out = ss;
+				std::cout.rdbuf(ss.rdbuf());
+				out.rdbuf(_sDefaultCoutBuffer);
+				StartColor(level);
+			}
 			stream << CurrentThread() << CurrentTime() << label;
 			LogHelper(std::forward<Args>(args)...);
 			if (level == e_Error)
 				stream << "~~~~~";
 			stream << std::endl;
+			if (stream.rdbuf() == _sDefaultCoutBuffer && _sUsingColor)
+			{
+				EndColor();
+				/*put cout back.*/
+				std::cout.rdbuf(_sDefaultCoutBuffer);
+				/*write anything that was intented for cout while it was disabled.*/
+				std::cout << ss.str();
+			}
 		}
 
 	}

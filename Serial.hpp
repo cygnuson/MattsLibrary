@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Endian.hpp"
+#include "ArrayView.hpp"
 
 namespace cg {
 
@@ -17,11 +18,18 @@ public:
 	const static char BigEndian = 0;
 	/**Create a serial.*/
 	Serial();
+	/**Create a serial from an arrayview.
+	\param av The array view.*/
+	Serial(const cg::ArrayView& av);
+	/**Copy data from a poitner and size. This will erase the current contents.
+	\param data The pointer to the data.
+	\param size The size of the data.*/
+	void Copy(const char* data, std::size_t size);
 	/**Create a serial.
 	\param data The serial to load.
 	\param size The size of the serial to load.*/
 	Serial(char* data, std::size_t size);
-	/**Reset the extraction postition. will be 1, to skip the endian 
+	/**Reset the extraction postition. will be 1, to skip the endian
 	indicator.*/
 	void Reset();
 	/**Push data to the serial.
@@ -53,7 +61,10 @@ public:
 	void Pull(std::string& out);
 	/**Get a char* with the serial.
 	\return A char* with he data.*/
-	std::pair<const char*,std::size_t> Get() const;
+	std::pair<const char*, std::size_t> Get() const;
+	/**Get a char* with the serial.
+	\return An array view with the data.*/
+	cg::ArrayView GetArrayView() const;
 private:
 	/**The data.*/
 	std::vector<char> m_data;

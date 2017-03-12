@@ -11,10 +11,20 @@ Serial::Serial()
 		m_data.push_back(BigEndian);
 }
 
-Serial::Serial(char * data, std::size_t size)
+Serial::Serial(const cg::ArrayView & av)
+{
+	Copy(av.data(), av.size());
+}
+
+void Serial::Copy(const char * data, std::size_t size)
 {
 	m_data.insert(m_data.begin(), data, data + size);
 	m_isLittleEndian = (*m_data.begin()) == LittleEndian;
+}
+
+Serial::Serial(char * data, std::size_t size)
+{
+	Copy(data, size);
 }
 
 void Serial::Reset()
@@ -39,6 +49,11 @@ void Serial::Pull(std::string & out)
 std::pair<const char*, std::size_t> Serial::Get() const
 {
 	return{ m_data.data(), m_data.size() };
+}
+
+cg::ArrayView Serial::GetArrayView() const
+{
+	return cg::ArrayView::Copy(m_data.data(), m_data.size());
 }
 
 }

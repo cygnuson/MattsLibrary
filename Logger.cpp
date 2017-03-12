@@ -7,6 +7,7 @@ uint32_t				Logger::_sCurrentLevel = Logger::e_None;
 Logger::StreamMap		Logger::_sStreams;
 bool					Logger::_sInited = false;
 bool					Logger::_sEnabled = true;
+bool					Logger::_sUsingColor = true;
 bool					Logger::_sShowTime = true;
 bool					Logger::_sShowThread = true;
 bool					Logger::_sCloneAllStreams = false;
@@ -16,8 +17,19 @@ const char				Logger::_sNoteLabel1[8] = "NOTE1: ";
 const char				Logger::_sNoteLabel2[8] = "NOTE2: ";
 const char				Logger::_sNoteLabel3[8] = "NOTE3: ";
 std::string				Logger::_sPrimaryLogName = "MAINLOG";
-std::string				Logger::_sActiveLogName = Logger::_sPrimaryLogName;
+std::string				Logger::_sActiveLogName = _sPrimaryLogName;
 std::recursive_mutex	Logger::_sLogMutex;
+std::streambuf*         Logger::_sDefaultCoutBuffer = std::cout.rdbuf();
+std::pair<int, int>     Logger::_sErrorColor =
+{(int)colors::ForegroundColor::Red , (int)colors::BackgroundColor::Black};
+std::pair<int, int>     Logger::_sWarnColor =
+{ (int)colors::ForegroundColor::Yellow , (int)colors::BackgroundColor::Black };
+std::pair<int, int>     Logger::_sNote1Color =
+{ (int)colors::ForegroundColor::Cyan , (int)colors::BackgroundColor::Black };
+std::pair<int, int>     Logger::_sNote2Color =
+{ (int)colors::ForegroundColor::Cyan , (int)colors::BackgroundColor::Black };
+std::pair<int, int>     Logger::_sNote3Color =
+{ (int)colors::ForegroundColor::Cyan , (int)colors::BackgroundColor::Black };
 
 std::streambuf * Logger::ActiveLog()
 {
@@ -59,30 +71,97 @@ std::string Logger::CurrentThread()
 		return "";
 }
 
+void Logger::UseColor(bool use)
+{
+	_sUsingColor = use;
+}
+
+void Logger::StartColor(cg::Logger::Level level)
+{
+	/*only change if using cout.*/
+	if (ActiveLog() != _sDefaultCoutBuffer)
+		return;
+	int fore = 0;
+	int back = 0;
+	if (level == Level::e_Note1)
+	{
+		fore = _sNote1Color.first;
+		back = _sNote1Color.second;
+	}
+	if (level == Level::e_Note2)
+	{
+		fore = _sNote2Color.first;
+		back = _sNote2Color.second;
+	}
+	if (level == Level::e_Note3)
+	{
+		fore = _sNote3Color.first;
+		back = _sNote3Color.second;
+	}
+	if (level == Level::e_Warning)
+	{
+		fore = _sWarnColor.first;
+		back = _sWarnColor.second;
+	}
+	if (level == Level::e_Error)
+	{
+		fore = _sErrorColor.first;
+		back = _sErrorColor.second;
+	}
+#ifdef _WIN32
+	unsigned int col = fore | back;
+	if (!SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), col))
+	{
+		/*could not set*/
+	}
+#else
+	/*linux color setting*/
+#endif
+}
+
+void Logger::EndColor()
+{
+
+#ifdef _WIN32
+	unsigned int col = (unsigned int)colors::BackgroundColor::Black |
+		(unsigned int)colors::ForegroundColor::White;
+	if (!SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), col))
+	{
+		/*could not set*/
+	}
+#else
+	/*linux color setting*/
+#endif
+}
+
 void Logger::Init(
 	uint32_t level,
 	std::ostream &logStrm,
 	bool showTime,
-	bool showThread)
+	bool showThread,
+	bool useColor)
 {
 	std::lock_guard<std::recursive_mutex> lock(_sLogMutex);
 	_sCurrentLevel = level;
 	_sStreams[_sPrimaryLogName] = logStrm.rdbuf();
 	_sShowTime = showTime;
 	_sShowThread = showThread;
+	UseColor(useColor);
 	_sInited = true;
 }
 void Logger::Init(
 	uint32_t level,
 	std::streambuf* logStrm,
 	bool showTime,
-	bool showThread)
+	bool showThread,
+	bool useColor)
 {
 	std::lock_guard<std::recursive_mutex> lock(_sLogMutex);
 	_sCurrentLevel = level;
 	_sStreams[_sPrimaryLogName] = logStrm;
 	_sShowTime = showTime;
 	_sShowThread = showThread;
+	UseColor(useColor);
 	_sInited = true;
 }
 

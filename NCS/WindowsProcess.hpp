@@ -1,12 +1,12 @@
 #pragma once
 
+#include "../OSInclude.hpp"
+
 #ifdef _WIN32
 
 #include <array>
 #include <thread>
 #include <future>
-
-#include <Windows.h>
 
 #include "../LogAdaptor.hpp"
 #include "../MasterLock.hpp"

@@ -172,4 +172,7 @@ void cg::EchoClient::Wait()
 {
 	while (m_run)
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	if (m_asyncThread)
+		if (m_asyncThread->joinable())
+			m_asyncThread->join();
 }
