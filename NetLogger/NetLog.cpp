@@ -8,6 +8,11 @@ std::string NetLog::ms_name;
 bool NetLog::ms_isInit = false;
 cg::net::Socket* NetLog::ms_client = nullptr;
 
+void NetLog::Stop()
+{
+	LogWarn("STOPDEBUG");
+}
+
 void NetLog::Init(const std::string & name,
 	uint16_t port)
 {

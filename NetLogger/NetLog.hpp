@@ -8,11 +8,13 @@ namespace cg {
 class NetLog
 {
 public:
+	/**Signal the close of the net log.*/
+	static void Stop();
 	/**Initialize the logger.
 	\param name This clients name.
 	\param port The port of the server.*/
 	static void Init(const std::string& name,
-		uint16_t port);
+		uint16_t port = NetLoggerMessage::DefaultPort);
 	/**Send a log message to the server.
 	\param notelevel The level of note to log.
 	\param args any params that will be sent straight to the logger.*/

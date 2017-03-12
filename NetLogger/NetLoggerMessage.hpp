@@ -9,6 +9,8 @@ namespace cg {
 class NetLoggerMessage
 {
 public:
+	/**The default net logger port.*/
+	const static uint16_t DefaultPort = 33111;
 	/**Create an empty message.*/
 	NetLoggerMessage() {};
 	/**Create a message from an array view.
