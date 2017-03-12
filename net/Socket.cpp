@@ -88,7 +88,7 @@ void Socket::GetPeerName(sockaddr_storage & addr) const
 	Unlock();
 }
 
-Socket::Address Socket::GetAddress()
+Socket::Address Socket::GetAddress() const
 {
 	sockaddr_storage addr;
 	try
@@ -247,7 +247,6 @@ void Socket::Close()
 	error = close(m_socket);
 #endif // _WIN32
 	Unlock();
-	m_id = Socket::InvalidId;
 	if (error != 0)
 	{
 		NetworkException e; //number auto generated
@@ -256,6 +255,7 @@ void Socket::Close()
 		throw e;
 	}
 	LogNote(2, __FUNCSTR__, "Closed socket ", Id(), ".");
+	m_id = Socket::InvalidId;
 }
 
 void Socket::Bind(bool ip6, Port port)
@@ -310,7 +310,7 @@ void Socket::Listen(socklen_t backlog)
 	}
 	LogNote(2, __FUNCSTR__, "Socket ", Id(), " is listening.");
 }
-bool Socket::Accept(Socket & sock, bool block)
+bool Socket::Accept(Socket & sock, bool block) const
 {
 	if (block)
 		ReadReady(-1);
@@ -325,6 +325,7 @@ bool Socket::Accept(Socket & sock, bool block)
 	sock.Lock();
 	Lock();
 	sock = accept(m_socket, (sockaddr*)&clientAddy, &len);
+	sock.SetBlockMode(false);
 	Unlock();
 	sock.Unlock();
 	if (sock.m_socket == Socket::InvalidSocket)
@@ -335,11 +336,11 @@ bool Socket::Accept(Socket & sock, bool block)
 		throw e;
 	}
 	auto addr = GetAddress(clientAddy);
-	LogNote(2, __FUNCSTR__, "Socket ", Id(), " connected.\n\tAddress=",
+	LogNote(2, __FUNCSTR__, "Socket ", sock.Id(), " accepted.\n\tAddress=",
 		addr.first, "\n\t   Port=", addr.second);
 	return true;
 }
-bool Socket::IsOpen()
+bool Socket::IsOpen() const
 {
 	if (m_id == InvalidId)
 		return false;
@@ -365,7 +366,7 @@ bool Socket::IsOpen()
 }
 addrinfo* Socket::MakeAddress(std::string && address,
 	Port port,
-	bool portOnly)
+	bool portOnly) const
 {
 	addrinfo hints = { 0 };
 	addrinfo* resPtr;
@@ -399,7 +400,7 @@ addrinfo* Socket::MakeAddress(std::string && address,
 std::ptrdiff_t Socket::Recv(char* data,
 	std::size_t size,
 	bool block,
-	socklen_t flags)
+	socklen_t flags) const
 {
 	Lock();
 	/*If block, wait untill we know the recv has data.*/
@@ -436,7 +437,7 @@ std::ptrdiff_t Socket::Recv(char* data,
 std::ptrdiff_t Socket::Send(const char* data,
 	std::size_t size,
 	bool block,
-	socklen_t flags)
+	socklen_t flags) const
 {
 	Lock();
 	/*If block, wait untill we know the send has data.*/

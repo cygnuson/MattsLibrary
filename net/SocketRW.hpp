@@ -19,7 +19,7 @@ public:
 	\param sock An address to the socket to use for writing and reading.
 	\param writeFilter The filter to be applied to written data.
 	\param readFilter The filter ot be applied to the read data.*/
-	SocketRW(Socket* sock,
+	SocketRW(const Socket* sock,
 		Filter* writeFilter,
 		Filter* readFilter);
 	/**Destroy and clean up*/
@@ -36,7 +36,7 @@ public:
 	void operator=(SocketRW&& other);
 	/**Create the socket reader writer.
 	\param sock Aa address to the socket to use for writing and reading.*/
-	SocketRW(Socket* sock);
+	SocketRW(const Socket* sock);
 	/**Write some data to the object.  If Ready() returned true before this
 	call, the timeout should never be reached sense this object should return
 	immediatly.
@@ -83,7 +83,7 @@ private:
 	/**Check and err*/
 	void CheckAndReport() const;
 	/**A ref to the socket.*/
-	Socket* m_socket;
+	const Socket* m_socket;
 	/**The reading filter filter.*/
 	Filter* m_readFilter;
 	/**The writing filter filter.*/

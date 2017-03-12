@@ -45,6 +45,11 @@ private:
 template<typename ...Args>
 inline void NetLog::LogNote(int noteLevel, Args && ...args)
 {
+	if (!ms_client)
+	{
+		cg::Logger::LogNote(noteLevel, std::forward<Args>(args)...);
+		return;
+	}
 	NetLoggerMessage msg;
 	auto lv = cg::Logger::Level::e_None;
 	if (noteLevel == 1)
@@ -70,6 +75,11 @@ inline void NetLog::LogNote(int noteLevel, Args && ...args)
 template<typename ...Args>
 inline void NetLog::LogWarn(Args && ...args)
 {
+	if (!ms_client)
+	{
+		cg::Logger::LogWarn(std::forward<Args>(args)...);
+		return;
+	}
 	NetLoggerMessage msg;
 	msg.m_text = cg::StringTogether(std::forward<Args>(args)...);
 	msg.m_level = cg::Logger::Level::e_Warning;
@@ -82,6 +92,11 @@ inline void NetLog::LogWarn(Args && ...args)
 template<typename ...Args>
 inline void NetLog::LogError(Args && ...args)
 {
+	if (!ms_client)
+	{
+		cg::Logger::LogError(std::forward<Args>(args)...);
+		return;
+	}
 	NetLoggerMessage msg;
 	msg.m_text = cg::StringTogether(std::forward<Args>(args)...);
 	msg.m_level = cg::Logger::Level::e_Error;

@@ -25,7 +25,9 @@ enum class Shutdown
 If a reference of the socket exists anyware it should be locked.  When the
 socket is locked, any lists it is inside of should also be locked.  This 
 will ensure that while the reference to the socket is alive, it will stay
-alive as long as intented.*/
+alive as long as intented.
+
+Anyhting that does not alter the state of the socket is const.*/
 struct Socket : cg::net::NetworkObject,
 	public cg::LogAdaptor<Socket>
 {
@@ -89,7 +91,7 @@ struct Socket : cg::net::NetworkObject,
 	void Unlock() const;
 	/**Get a scope-based lock for the socket.
 	\return A ScopeLock for this socket.*/
-	inline auto ScopeLock()
+	inline auto ScopeLock() const
 	{
 		return m_lock.LockGuard();
 	}
@@ -126,7 +128,7 @@ struct Socket : cg::net::NetworkObject,
 	\throws cg::net::NetworkException A network exception is thrown if the
 	underlying socket infrastructure throws an exception.
 	\sa cg::net::NetworkException*/
-	Address GetAddress();
+	Address GetAddress() const;
 	/**Get an address from a pre-filled out sockaddr_storage.
 
 	\param info The sockaddr_storage object that was filled out by some other
@@ -150,7 +152,7 @@ struct Socket : cg::net::NetworkObject,
 	std::ptrdiff_t Recv(char* data,
 		std::size_t size,
 		bool block,
-		socklen_t flags = 0);
+		socklen_t flags = 0) const;
 	/**Send data to a connected socket.
 
 	Send data to a connected socket. If the socket does not have a valid
@@ -167,7 +169,7 @@ struct Socket : cg::net::NetworkObject,
 	std::ptrdiff_t Send(const char* data,
 		std::size_t size,
 		bool block,
-		socklen_t flags = 0);
+		socklen_t flags = 0) const;
 	/**Shut down a socket.
 
 	Shut down a socket.  Use the options cg::net::Shutdown enum to detemrine
@@ -213,11 +215,11 @@ struct Socket : cg::net::NetworkObject,
 	\throws NetworkException Throws the code that the OS sockets set on error.
 	*/
 	bool Accept(Socket& socket,
-		bool block = true);
+		bool block = true) const;
 	/**Determine the status of a socket.
 	
 	\return True if the socket is open.*/
-	bool IsOpen();
+	bool IsOpen() const;
 protected:/********************************************************************PROTECTED**********/
 	using cg::LogAdaptor<Socket>::EnableLogs;
 	using cg::LogAdaptor<Socket>::LogNote;
@@ -239,7 +241,7 @@ protected:/********************************************************************P
 	*/
 	addrinfo* MakeAddress(std::string&& address,
 		Port port,
-		bool portOnly = false);
+		bool portOnly = false) const;
 	/**Allow this to be used in place of regular sockets.
 	
 	Allow this to be used in place of regular sockets.  Dont forget to lock

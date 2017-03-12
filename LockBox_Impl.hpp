@@ -28,6 +28,48 @@ inline bool LockBox<Container>::Empty() const
 }
 
 template<typename Container>
+inline void LockBox<Container>::WaitForElements()
+{
+	if (Size() > 0)
+		return;
+	std::unique_lock<std::mutex> lock(m_waitMutex);
+	mcv_waiter.wait(lock, [&]() {
+		return !this->Empty();
+	});
+	LogNote(1,"Finished waiting.");
+}
+
+template<typename Container>
+inline void LockBox<Container>::WaitForElements(bool& extBool)
+{
+	if (Size() > 0)
+		return;
+	std::unique_lock<std::mutex> lock(m_waitMutex);
+	mcv_waiter.wait(lock, [&]() {
+		return (!this->Empty() || !extBool);
+	});
+	LogNote(1, "Finished waiting.");
+}
+
+template<typename Container>
+inline void LockBox<Container>::WaitForElements(std::atomic_bool & extBool)
+{
+	if (Size() > 0)
+		return;
+	std::unique_lock<std::mutex> lock(m_waitMutex);
+	mcv_waiter.wait(lock, [&]() {
+		return (!this->Empty() || !extBool.load());
+	});
+	LogNote(1, "Finished waiting.");
+}
+
+template<typename Container>
+inline void LockBox<Container>::Notify()
+{
+	mcv_waiter.notify_one();
+}
+
+template<typename Container>
 inline LockBox<Container>::LockBox()
 	:m_con(new Container())
 {

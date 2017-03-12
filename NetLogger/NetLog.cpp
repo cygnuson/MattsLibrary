@@ -10,6 +10,12 @@ cg::net::Socket* NetLog::ms_client = nullptr;
 
 void NetLog::Stop()
 {
+	if (!ms_client)
+	{
+		cg::Logger::LogError("The NetLogger is not setup.");
+		return;
+	}
+
 	LogWarn("STOPDEBUG");
 }
 
@@ -33,6 +39,11 @@ void NetLog::Init(const std::string & name,
 
 void NetLog::WriteMessage(const cg::NetLoggerMessage & msg)
 {
+	if (!ms_client)
+	{
+		cg::Logger::LogError("The NetLogger is not setup.");
+		return;
+	}
 	for (int i = 0; i < 5; ++i)
 	{
 		try {

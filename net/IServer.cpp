@@ -73,9 +73,7 @@ void IServer::CheckClients()
 		if (!it->IsOpen())
 		{
 			SocketRemoved(false, it);
-			m_clients.erase(it);
-			if (m_clients.size() == 0)
-				break;
+			it = m_clients.erase(it);
 			continue;
 		}
 		while (it->ReadReady())
@@ -83,8 +81,8 @@ void IServer::CheckClients()
 			if (!HandleData(it))
 			{
 				SocketRemoved(true, it);
-				m_clients.erase(it);
-				break;
+				it = m_clients.erase(it);
+				continue;
 			}
 		}
 		/*if the last one was removed, stop looping. The for loop will cause an

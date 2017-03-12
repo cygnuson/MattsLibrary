@@ -105,6 +105,21 @@ public:
 	/**Quickly determine if the box is empty.
 	\return True if the box is empty.*/
 	bool Empty() const;
+	/**Wait on this box untill its size is not zero any more. If it is already
+	not zero, then it returns immediatly.*/
+	void WaitForElements();
+	/**Wait on this box untill its size is not zero any more. If it is already
+	not zero, then it returns immediatly.
+	\param extBool A reference to a boolean that when its false, the waiting
+	will stop.*/
+	void WaitForElements(bool& extBool);
+	/**Wait on this box untill its size is not zero any more. If it is already
+	not zero, then it returns immediatly.
+	\param extBool A reference to and atomic bool that will stop the waiting
+	when made to be false*/
+	void WaitForElements(std::atomic_bool& extBool);
+	/**Notify the waiter that somehting has happened and should wake up.*/
+	void Notify();
 	/**Try to get reader access to the lock box.
 	\return true of the reader is locked for this thread.*/
 	inline bool TryReader()
@@ -145,12 +160,18 @@ private:
 	using LogAdaptor<LockBox<Container>>::LogNote;
 	using LogAdaptor<LockBox<Container>>::LogError;
 	using LogAdaptor<LockBox<Container>>::LogWarn;
+	using LogAdaptor<LockBox<Container>>::Log;
+	using LogAdaptor<LockBox<Container>>::ms_name;
 	/**Size for forwards lists.*/
 	std::size_t Size(std::false_type) const;
 	/**Size for non forwards lists.*/
 	std::size_t Size(std::true_type) const;
 	/**The shared mutex access.*/
 	MasterLock<Mutex,false, TimedLocks> m_lock;
+	/**A unique mutex for waiting.*/
+	std::mutex m_waitMutex;
+	/**A condition variable for waiting.*/
+	std::condition_variable mcv_waiter;
 	/**The container to hold the elements. It will be a reference if needed*/
 	Container* m_con;
 	/*keep track incase we need to delete out list.*/

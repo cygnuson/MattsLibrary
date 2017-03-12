@@ -11,7 +11,7 @@ inline void WaitTimedBasicLock<Mutex, Ref>::Lock()
 	}
 	else
 	{
-		LogNote(1, __FUNCSTR__, "TryLock Fail, will block.");
+		LogError(__FUNCSTR__, "TryLock Fail, will block.");
 	}
 	BeforeLock();
 	m_lock.lock();
@@ -68,7 +68,7 @@ inline void WaitTimedSharedLock<Mutex, Ref>::SLock()
 	}
 	else
 	{
-		LogNote(1, __FUNCSTR__, "TryLock Fail, will block.");
+		LogError(1, __FUNCSTR__, "TryLock Fail, will block.");
 	}
 	BeforeLock();
 	m_lock.lock_shared();
@@ -152,9 +152,9 @@ inline void WaitTimedLockMember<Mutex, Ref>::AfterLock()
 	auto callTime
 		= (std::chrono::high_resolution_clock::now() - m_lastStart);
 	m_totalWaitTime += callTime;
-	auto seconds = std::chrono::duration_cast<std::chrono::milliseconds>
+	auto seconds = std::chrono::duration_cast<std::chrono::microseconds>
 		(callTime).count();
-	LogNote(1, __FUNCSTR__, "Blocked for ", seconds, " milliseconds.");
+	LogWarn(__FUNCSTR__, "Blocked for ", seconds, " microseconds.");
 }
 
 template<typename Mutex>
@@ -184,9 +184,9 @@ inline void WaitTimedLockMember<Mutex, true>::AfterLock()
 	auto callTime
 		= (std::chrono::high_resolution_clock::now() - m_lastStart);
 	m_totalWaitTime += callTime;
-	auto seconds = std::chrono::duration_cast<std::chrono::milliseconds>
+	auto seconds = std::chrono::duration_cast<std::chrono::microseconds>
 		(callTime).count();
-	LogNote(1, __FUNCSTR__, "Blocked for ", seconds, " milliseconds.");
+	LogWarn(1, __FUNCSTR__, "Blocked for ", seconds, " microseconds.");
 }
 
 }

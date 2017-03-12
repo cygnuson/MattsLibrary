@@ -3,7 +3,7 @@
 namespace cg {
 namespace net {
 
-SocketRW::SocketRW(Socket* sock,
+SocketRW::SocketRW(const Socket* sock,
 	Filter * writeFilter,
 	Filter * readFilter)
 	:m_socket(sock), m_readFilter(readFilter), m_writeFilter(writeFilter)
@@ -27,7 +27,7 @@ void SocketRW::operator=(SocketRW && other)
 	other.m_writeFilter = nullptr;
 	other.m_socket = nullptr;
 }
-SocketRW::SocketRW(Socket * sock)
+SocketRW::SocketRW(const Socket * sock)
 	: m_socket(sock),
 	m_readFilter(nullptr),
 	m_writeFilter(nullptr)
