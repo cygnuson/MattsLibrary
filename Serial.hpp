@@ -32,6 +32,16 @@ public:
 	/**Reset the extraction postition. will be 1, to skip the endian
 	indicator.*/
 	void Reset();
+	/**Stream operator.
+	\param obj The object to stream in.
+	\return A ref to this object.*/
+	template<typename T>
+	Serial& operator<<(const T& obj);
+	/**Stream operator.
+	\param obj The object to stream out.
+	\return A ref to this object.*/
+	template<typename T>
+	Serial& operator>>(T& obj);
 	/**Push data to the serial.
 	\tparam T The type of data to push.
 	\param data The data to push.*/
@@ -73,6 +83,20 @@ private:
 	/**True for little endian system.*/
 	bool m_isLittleEndian = cg::Endian::little;
 };
+
+template<typename T>
+inline Serial & Serial::operator<<(const T & obj)
+{
+	this->Push(obj);
+	return *this;
+}
+
+template<typename T>
+inline Serial & Serial::operator >> (T & obj)
+{
+	this->Pull(obj);
+	return *this;
+}
 
 template<typename T>
 inline void Serial::Push(const T & data)

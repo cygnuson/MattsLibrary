@@ -8,7 +8,7 @@
 namespace cg {
 namespace net {
 
-class IServer
+class IServer : public NetworkObject
 {
 public:
 	/**The virt decon*/
@@ -23,6 +23,9 @@ public:
 protected:
 	/**The type of list for holding clients.*/
 	using ClientList = std::list<cg::net::Socket>;
+	/**Change the update speed of the loop.
+	\param fps The speed in frames per sec.*/
+	void ChangeUpdateSpeed(double fps);
 	/**Wait for the server to finish what its doing.*/
 	virtual void Wait() const;
 	/**Accept any sockets that are available to accept.*/
@@ -35,8 +38,10 @@ protected:
 	closed and removed.*/
 	virtual bool HandleData(ClientList::iterator sock) = 0;
 	/**Will be called on each socket as soon as it is accepted.
-	\param sock A iterator to the socket that was accepted.*/
-	virtual void HandleAccept(ClientList::iterator sock) = 0;
+	\param sock A iterator to the socket that was accepted.
+	\return True if the socket should stay in the list. False if it should be
+	closed and removed.*/
+	virtual bool HandleAccept(ClientList::iterator sock) = 0;
 	/**This function will be called right before a socket is removed from the
 	client list.
 	\param grace True if the socket closed properly.

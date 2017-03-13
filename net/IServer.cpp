@@ -29,6 +29,11 @@ void IServer::Stop()
 	Wait();
 }
 
+void IServer::ChangeUpdateSpeed(double fps)
+{
+	m_updateSpeed.FPS(fps);
+}
+
 void IServer::Wait() const
 {
 	while (m_run)
@@ -76,7 +81,7 @@ void IServer::CheckClients()
 			it = m_clients.erase(it);
 			continue;
 		}
-		while (it->ReadReady())
+		if (it->ReadReady())
 		{
 			if (!HandleData(it))
 			{

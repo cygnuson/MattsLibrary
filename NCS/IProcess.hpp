@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Timer.hpp"
+#include "../Memory.hpp"
 
 namespace cg {
 
@@ -24,7 +25,7 @@ public:
 	/**Start a process.
 	\pram args The args to send along as space seperated strings.
 	\return True if the process was started properly.*/
-	virtual void Start(const std::string& args = "", 
+	virtual void Start(const std::string& args = "",
 		double updateFPS = 10) = 0;
 	/**Forward athe output.*/
 	virtual void UpdateOutput() = 0;
@@ -89,12 +90,13 @@ inline void IProcess::Wait()
 
 inline void IProcess::AsyncUpdateOutput(double fps)
 {
-	mt_outputSync = new std::thread(&IProcess::UpdateOutputLoop, this, fps);
+	mt_outputSync = cg::New<std::thread>(&IProcess::UpdateOutputLoop,
+		this, fps);
 }
 
 inline void IProcess::AsyncUpdateInput(double fps)
 {
-	mt_inputSync = new std::thread(&IProcess::UpdateInputLoop, this, fps);
+	mt_inputSync = cg::New<std::thread>(&IProcess::UpdateInputLoop, this, fps);
 }
 inline void IProcess::UpdateOutputLoop(double fps)
 {

@@ -10,7 +10,7 @@ inline LockBox<Container>::~LockBox()
 {
 	/*clean up only if we are using a list reference and we did allocated.*/
 	if (m_didAllocateContainer)
-		delete m_con;
+		cg::Delete(m_con);
 }
 
 template<typename Container>
@@ -71,7 +71,7 @@ inline void LockBox<Container>::Notify()
 
 template<typename Container>
 inline LockBox<Container>::LockBox()
-	:m_con(new Container())
+	:m_con(cg::New<Container>())
 {
 	m_didAllocateContainer = true;
 	if (!ms_log)
@@ -96,7 +96,7 @@ LockBox<Container>::LockBox(Container& someList,
 template<typename Container>
 LockBox<Container>::LockBox(Container& someList,
 	cg::Swap op)
-	:m_con(new Container)
+	:m_con(cg::New<Container>())
 {
 	m_didAllocateContainer = true;
 	m_con->swap(someList);
@@ -110,7 +110,7 @@ template<typename Container>
 template<typename U>
 LockBox<Container>::LockBox(const U& someList,
 	cg::Copy op)
-	:m_con(new Container(someList.begin(), someList.end()))
+	:m_con(cg::New<Container>(someList.begin(), someList.end()))
 {
 	m_didAllocateContainer = true;
 	if (!ms_log)

@@ -15,6 +15,7 @@
 #include <cryptopp/secblock.h>
 
 #include "../exception.hpp"
+#include "../Memory.hpp"
 
 
 namespace cg {
@@ -64,7 +65,7 @@ struct HashData
 struct AESData
 {
 	/**Empty aes data with a new byte block*/
-	AESData() :m_data(new CryptoPP::SecByteBlock())
+	AESData() :m_data(cg::New<CryptoPP::SecByteBlock>())
 	{
 		m_created = true;
 	};
@@ -83,7 +84,8 @@ struct AESData
 	/**Dextroy the data if it was creatd.*/
 	~AESData()
 	{
-		if (m_created) delete m_data;
+		if (m_created) 
+			cg::DeleteA(m_data);
 	}
 	/**The data.*/
 	CryptoPP::SecByteBlock* m_data;

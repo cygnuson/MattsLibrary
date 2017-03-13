@@ -7,6 +7,7 @@
 
 #include "SocketRW.hpp"
 #include "../Timer.hpp"
+#include "../Memory.hpp"
 
 namespace cg {
 /**Data sent to this server must have 8 bytes sent before each message which 

@@ -26,9 +26,9 @@ public:
 	~SocketRW()
 	{
 		if (m_readFilter)
-			delete m_readFilter;
+			cg::Delete(m_readFilter);
 		if (m_writeFilter)
-			delete m_writeFilter;
+			cg::Delete(m_writeFilter);
 	}
 	/**Move*/
 	SocketRW(SocketRW&& other);

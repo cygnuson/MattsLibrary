@@ -19,9 +19,10 @@ void NetLogServer::PrintMsg(const NetLoggerMessage& msg)
 		msg.m_time, msg.m_text);
 }
 
-void NetLogServer::HandleAccept(ClientList::iterator sock)
+bool NetLogServer::HandleAccept(ClientList::iterator sock)
 {
 	cg::Logger::LogNote(3, "Accepted a client.");
+	return true;
 }
 
 bool NetLogServer::HandleData(ClientList::iterator sock)

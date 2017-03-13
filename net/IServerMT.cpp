@@ -18,21 +18,23 @@ IServerMT::~IServerMT()
 	for (int i = 0; i < m_dataThreadCount; ++i)
 	{
 		if (m_dataThreads[i])
-			delete m_dataThreads[i];
+			cg::Delete( m_dataThreads[i]);
 	}
-	delete[] m_dataThreads;
+	cg::DeleteA(m_dataThreads);
 }
 
 void IServerMT::Start(uint16_t port)
 {
 	if (m_run)
 		Stop();
-	m_dataThreads = new std::thread*[m_dataThreadCount];
+	m_acceptorLimit.FPS(100);
+	m_readyLimit.FPS(100);
+	m_run = true;
+	m_dataThreads = cg::NewA<std::thread*>(m_dataThreadCount);
 	for (int i = 0; i < m_dataThreadCount; ++i)
 	{
-		m_dataThreads[i] = new std::thread(&IServerMT::DataLoop, this);
+		m_dataThreads[i] = cg::New<std::thread>(&IServerMT::DataLoop, this);
 	}
-	m_run = true;
 	m_serverSocket.Bind(true, port);
 	AutoAccept();
 	ScanForReady();
@@ -53,6 +55,16 @@ void IServerMT::Wait()
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
+void IServerMT::ChangeAcceptorSpeed(double fps)
+{
+	m_acceptorLimit.FPS(fps);
+}
+
+void IServerMT::ChangeScannerSpeed(double fps) 
+{
+	m_readyLimit.FPS(fps);
+}
+
 void IServerMT::DataLoop()
 {
 	++m_activeDataThreads;
@@ -60,21 +72,22 @@ void IServerMT::DataLoop()
 	{
 		/*will wait for elements.*/
 		m_readyBox.WaitForElements(std::ref(m_run));
-		auto writer = m_readyBox.Writer();
-		auto it = writer->begin();
-		auto end = writer->end();
-		for (; it != end; ++it)
+		cg::net::Socket* sock = nullptr;
 		{
-			if (!(*it)->IsOpen())
-			{
-				it = writer->erase(it);
-					continue;
-			}
-			if ((*it)->ReadReady())
-			{
-				ProcessSocket(**it);
-			}
+			auto writer = m_readyBox.Writer();
+			if (writer->size() == 0)
+				continue;
+			sock = *writer->begin();
+			writer->pop_front();
 		}
+			if (!sock->IsOpen())
+			{
+				cg::Delete( sock);
+			}
+			/*sock should be ready beause it was in the ready list.*/
+			ProcessSocket(*sock);
+			/*put it back into the client box.*/
+			m_clientBox.Writer()->push_back(sock);
 	}
 	--m_activeDataThreads;
 }
@@ -96,13 +109,25 @@ void IServerMT::CloseAll()
 
 	if (m_clientBox.Size() == 0)
 		return;
-
-	auto writer = m_clientBox.Writer();
-	auto it = writer->begin();
-	auto end = writer->end();
-	for (; it != end; ++it)
 	{
-		it->Close();
+		auto writer = m_clientBox.Writer();
+		auto it = writer->begin();
+		auto end = writer->end();
+		for (; it != end; ++it)
+		{
+			(*it)->Close();
+			cg::Delete(*it);
+		}
+	}
+	{
+		auto writer = m_readyBox.Writer();
+		auto it = writer->begin();
+		auto end = writer->end();
+		for (; it != end; ++it)
+		{
+			(*it)->Close();
+			cg::Delete(*it);
+		}
 	}
 }
 
@@ -125,37 +150,41 @@ void IServerMT::WaitForThreads()
 void IServerMT::ScanForReady()
 {
 	m_readyScannerStopped = false;
-	mt_readyScanner = new std::thread(&IServerMT::ScanForReadyLoop, this);
+	mt_readyScanner = cg::New<std::thread>(&IServerMT::ScanForReadyLoop, this);
 }
 
 void IServerMT::AutoAccept()
 {
 	m_acceptScannerStopped = false;
 	m_serverSocket.Listen();
-	mt_acceptScanner = new std::thread(&IServerMT::AcceptLoop, this);
+	mt_acceptScanner = cg::New<std::thread>(&IServerMT::AcceptLoop, this);
 }
 
 void IServerMT::ScanForReadyLoop()
 {
-	cg::SpeedLimit limit(100);
 	while (m_run)
 	{
 		/*will wait for elements.*/
-		limit();
+		m_readyLimit();
 		auto writer = m_clientBox.Writer();
 		auto it = writer->begin();
 		auto end = writer->end();
 		for (; it != end; ++it)
 		{
-			if (!it->IsOpen())
+			if (!(*it)->IsOpen())
 			{
-				SocketClosed(*it, false);
+				SocketClosed(**it, false);
 				it = writer->erase(it);
 				continue;
 			}
-			if (it->ReadReady())
+			if ((*it)->ReadReady())
 			{
-				m_readyBox.Writer()->emplace_back(std::addressof(*it));
+				m_readyBox.Writer()->push_back(*it);
+				it = writer->erase(it);
+				if (it == end)
+					/*If it was the last thing in the list, it now equals .end
+					and we will break instead of trying to increment it.*/
+					break;
 				m_readyBox.Notify();
 			}
 		}
@@ -165,22 +194,23 @@ void IServerMT::ScanForReadyLoop()
 
 void IServerMT::AcceptLoop()
 {
-	cg::SpeedLimit limit(100);
 	while (m_run)
 	{
-		limit();
+		m_acceptorLimit();
 		while (m_serverSocket.ReadReady())
 		{
 			auto writer = m_clientBox.Writer();
-			auto it = writer->emplace(writer->end(), false);
-			auto accepted = m_serverSocket.Accept(*it, false);
+			auto sock = cg::New<cg::net::Socket>();
+			auto accepted = m_serverSocket.Accept(*sock, false);
 			if(accepted)
 			{
-				SocketAccepted(*it);
+				SocketAccepted(*sock);
+				writer->push_back(sock);
 			}
 			else
 			{
-				writer->pop_back();
+				/*not accepted for some reason, delete it.*/
+				cg::Delete(sock);
 			}
 		}
 	}

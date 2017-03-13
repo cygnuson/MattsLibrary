@@ -24,7 +24,7 @@ public:
 	virtual ~FilterGroup()
 	{
 		for (std::size_t i = 0; i < m_filters.size(); ++i)
-			delete m_filters[i];
+			cg::Delete(m_filters[i]);
 	}
 	/**Add a filter.
 	\param filter The filter to add.*/

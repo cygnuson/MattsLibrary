@@ -31,7 +31,7 @@ private:
 	virtual bool HandleData(ClientList::iterator sock)override;
 	/**Will be called on each socket as soon as it is accepted.
 	\param sock A iterator to the socket that was accepted.*/
-	virtual void HandleAccept(ClientList::iterator sock)override;
+	virtual bool HandleAccept(ClientList::iterator sock)override;
 	/**This function will be called right before a socket is removed from the
 	client list.
 	\param grace True if the socket closed properly.
