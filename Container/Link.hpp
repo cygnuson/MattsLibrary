@@ -1,15 +1,12 @@
 #pragma once
 
-#include "../Memory.hpp"
-
 namespace cg {
 
 template<typename T>
-class IteratorBase
+struct Link
 {
-public:
 	/**The type of value contained*/
-	using value_type = typename T::value_type;
+	using value_type = T;
 	/**A reference to the value type.*/
 	using reference = value_type&;
 	/**A poitner of value_type*/
@@ -20,14 +17,6 @@ public:
 	using const_pointer = const value_type*;
 	/**The type gotten when doing math on poitners.*/
 	using difference_type = std::ptrdiff_t;
-
-private:
-
 };
 
-
 }
-
-
-
-

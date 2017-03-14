@@ -46,7 +46,8 @@ public:
 	implementing class does not timeout (like a file or mem write) then this
 	param should have a default value and be ignored.  The timeout is in micro
 	seconds.
-	\return The amount of bytes written.*/
+	\return The amount of bytes written. -1 if the socket is no open, or 0
+	if nothing was sent.*/
 	virtual std::ptrdiff_t Write(const char * data,
 		std::size_t size,
 		std::ptrdiff_t timeout = -1) override;
@@ -57,7 +58,7 @@ public:
 	seconds.
 	\param expectedSize Does not matter for this class.
 	\return an ArrayView with data.  An ArrayView with nullptr and 0 size if
-	no bytes are read.*/
+	no bytes are read, or the socket is not open.*/
 	cg::ArrayView Read(std::size_t expectedSize = 0, 
 		std::ptrdiff_t timeout = -1);
 	/**Check and see if the socket has data available.

@@ -5,6 +5,8 @@
 
 #include "Endian.hpp"
 #include "ArrayView.hpp"
+#include "Writer.hpp"
+#include "Reader.hpp"
 
 namespace cg {
 
@@ -19,19 +21,38 @@ public:
 	/**Create a serial.*/
 	Serial();
 	/**Create a serial from an arrayview.
-	\param av The array view.*/
+	\param av The array view. Should include the first endian check byte.*/
 	Serial(const cg::ArrayView& av);
 	/**Copy data from a poitner and size. This will erase the current contents.
+	Should include the first endian check byte.
 	\param data The pointer to the data.
 	\param size The size of the data.*/
 	void Copy(const char* data, std::size_t size);
-	/**Create a serial.
+	/**Create a serial. Should include the first endian check byte.
 	\param data The serial to load.
 	\param size The size of the serial to load.*/
 	Serial(char* data, std::size_t size);
 	/**Reset the extraction postition. will be 1, to skip the endian
 	indicator.*/
 	void Reset();
+	/**Write the serial directly to a writer.
+	\param writer The writer to write to. Will work with any object that is 
+	derived from cg::Writer.  The first endian check byte will be included.
+	\param timeout The amount of time to wait while trying to write.  0 for
+	no waiting, -1 for inf wating.
+	\return The amount written. */
+	std::size_t Write(cg::Writer& writer, std::ptrdiff_t timeout = 0);
+	/**Read data into the serial directly.  Will clobber the current contents
+	of the serial. The firt endian check byte will be expected.
+	\param timeout The amount of time to wait while trying to read.  0 for
+	no waiting, -1 for inf wating.
+	\param size The expected size to be received. The derived class passed to
+	the `reader` parameter may ignore this (eg SocketRW will ignore it).
+	\param reader The reader to read from.
+	\return The amount of bytes read.*/
+	std::size_t Read(cg::Reader& reader,
+		std::size_t size,
+		std::ptrdiff_t timeout = 0);
 	/**Stream operator.
 	\param obj The object to stream in.
 	\return A ref to this object.*/

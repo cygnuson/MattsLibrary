@@ -28,12 +28,12 @@ public:
 	\return The amount of bytes written.*/
 	virtual std::ptrdiff_t Write(const char* data,
 		std::size_t size,
-		std::ptrdiff_t timeout) = 0;
+		std::ptrdiff_t timeout = 1) = 0;
 	/**Write an array view.
 	\param av The array view.
 	\param timeout The timeout. -1 means inf timeout, 0 means no timeout.*/
 	virtual void Write(const cg::ArrayView& av,
-		std::ptrdiff_t timeout)
+		std::ptrdiff_t timeout = -1)
 	{
 		Write(av.data(), av.size(),timeout);
 	}
@@ -48,7 +48,7 @@ public:
 	Lessthan ZERO = inf timeout.
 	\return The amount of bytes written.*/
 	template<typename T>
-	inline std::ptrdiff_t Write(const T & data, std::ptrdiff_t timeout)
+	inline std::ptrdiff_t Write(const T & data, std::ptrdiff_t timeout = -1)
 	{
 		return Write(data.data(), data.size(), timeout);
 	}

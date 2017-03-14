@@ -32,6 +32,29 @@ void Serial::Reset()
 	m_pos = 1;
 }
 
+std::size_t Serial::Write(cg::Writer & writer, std::ptrdiff_t timeout)
+{
+	if (writer.WriteReady(timeout))
+		return (std::size_t) writer.Write(m_data);
+	else
+		return 0;
+}
+
+std::size_t Serial::Read(cg::Reader & reader,
+	std::size_t size,
+	std::ptrdiff_t timeout)
+{
+	if (reader.ReadReady(timeout))
+	{
+		auto av = reader.Read(size);
+		auto avSize = av.size();
+		this->m_data.clear();
+		this->m_data.insert(m_data.begin(), av.data(), av.data() + avSize);
+		return avSize;
+	}
+	return 0;
+}
+
 void Serial::Push(const std::string & str)
 {
 	Reset();
