@@ -7,12 +7,12 @@
 namespace cg {
 
 
-template<typename T>
-class RandomAccessIterator : public IteratorBase<T>
+template<typename T, bool Const>
+class RandomAccessIterator : public IteratorBase<T,Const>
 {
 public:
 	/**A type that is this current type.*/
-	using self_type = RandomAccessIterator<T>;
+	using self_type = RandomAccessIterator<T,Const>;
 	/**An iterator tag to make this work with std stuff.*/
 	using iterator_category = std::random_access_iterator_tag;
 	RandomAccessIterator() {};
@@ -60,12 +60,15 @@ public:
 	/**The sub operator.
 	\param amt The amount to sub from the position.*/
 	self_type operator-(std::size_t amt) const;
+	/**The sub operator.
+	\param amt The object to sub from the position.*/
+	self_type operator-(const self_type& other) const;
 	/**Dereference operator.
 	\return A reference to the data contained.*/
-	reference operator*();
+	RefReturnType operator*();
 	/**Poitner member access.
 	\return A pointer to this (-> is appolied to the pointer too).*/
-	pointer operator->();
+	PointerReturnType operator->();
 	/**Compare for equality.
 	\return True if the iterators are the same.*/
 	bool operator==(const self_type& rhs) const;
@@ -96,7 +99,6 @@ public:
 
 }
 
-#include "RandomAccessIterator_impl.hpp"
 
 
 

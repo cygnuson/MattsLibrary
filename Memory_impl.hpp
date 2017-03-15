@@ -11,6 +11,7 @@ inline T * New(Args && ...args)
 	auto ptr = new T(std::forward<Args>(args)...);
 	DataLeak::m_records[ptr] = sizeof(T);
 	DataLeak::m_allocated += sizeof(T);
+	cg::Logger::LogNote(1, "New: ", sizeof(T), " bytes.");
 	return ptr;
 #else
 	return new T(std::forward<Args>(args)...);
@@ -26,8 +27,9 @@ inline T* NewA(std::size_t units, bool init)
 		ptr = new T[units]();
 	else
 		ptr = new T[units];
-	DataLeak::m_records[(void*)ptr] = units*sizeof(T);
+	DataLeak::m_records[(void*)ptr] = units * sizeof(T);
 	DataLeak::m_allocated += units * sizeof(T);
+	cg::Logger::LogNote(1, "NewA: ", units * sizeof(T), " bytes.");
 	return ptr;
 #else
 	if (init)
@@ -42,6 +44,7 @@ inline void Delete(T * loc)
 {
 #if defined(_DEBUG)
 	DataLeak::m_allocated -= sizeof(T);
+	cg::Logger::LogNote(1, "Delete: ", sizeof(T), " bytes.");
 #endif
 	delete loc;
 }
@@ -51,6 +54,7 @@ inline void DeleteA(T * loc)
 {
 #if defined(_DEBUG)
 	DataLeak::m_allocated -= (DataLeak::m_records[loc]);
+	cg::Logger::LogNote(1, "DeleteA: ", (DataLeak::m_records[loc]), " bytes.");
 	DataLeak::m_records.erase(loc);
 #endif
 	delete[] loc;

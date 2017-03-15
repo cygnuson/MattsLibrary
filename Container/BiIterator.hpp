@@ -66,7 +66,6 @@ public:
 
 }
 
-#include "BiIterator_impl.hpp"
 
 
 
