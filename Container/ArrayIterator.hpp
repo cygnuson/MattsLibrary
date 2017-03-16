@@ -320,4 +320,18 @@ inline void ArrayIterator<T, Const>::D_CheckValid() const
 }
 #endif
 
+#if _DEBUGAI
+void TestArrayIterator()
+{
+	int * ints = cg::NewA<int>(15);
+	for (int i = 0; i < 15; ++i)
+		ints[i] = i;
+	cg::ArrayIterator<int> ai(ints);
+	for (int i = 0; i < 15; ++i)
+		std::cout << std::endl << *ai++;
+
+	std::cout << std::endl;
+	cg::DeleteA(ints);
+}
+#endif
 }
