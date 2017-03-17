@@ -71,9 +71,9 @@ struct DoubleLinkNode : public Node<T> {
 	\param rhs The second node in the op.
 	\return true if LHS and RHS are the same Pointer.*/
 	static bool Equal(SelfType* lhs, SelfType* rhs);
-	/**Dereference a node.
+	/**Get a node.
 	\return A reference to the nodes data.*/
-	static Pointer Dereference(SelfType* node) {
+	static Pointer Get(SelfType* node) {
 		return node->m_ptr;
 	}
 #if _DEBUGDOUBLELINKNODE

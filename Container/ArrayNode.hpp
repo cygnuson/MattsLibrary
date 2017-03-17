@@ -63,9 +63,9 @@ struct ArrayNode : public Node<T> {
 	static bool Equal(SelfType* lhs, SelfType* rhs) {
 		return lhs->m_ptr == rhs->m_ptr;
 	}
-	/**Dereference a node.
+	/**Get a node.
 	\return A reference to the nodes data.*/
-	static Pointer Dereference(SelfType* node) {
+	static Pointer Get(SelfType* node) {
 		return node->m_ptr;
 	}
 	/**A Pointer to the data.*/

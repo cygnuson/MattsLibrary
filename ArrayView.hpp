@@ -121,6 +121,24 @@ struct ArrayViewImpl
 	{
 		return m_data;
 	}
+	/**Get a Begin() iterator for other lists.
+	\return A poitner to the first element.*/
+	T* begin()
+	{
+		return m_data;
+	}
+	/**Get a Begin() iterator for other lists.
+	\return A poitner to the first element.*/
+	const T* begin() const
+	{
+		return m_data;
+	}
+	/**Get a one past the end iterator for otehr list compat.
+	\return A pointer that is one past the end.*/
+	const T* end() const
+	{
+		return m_data + m_size;
+	}
 	/**Get the size of the data region.
 	\return The amount of elements for the data.*/
 	inline const std::size_t size() const

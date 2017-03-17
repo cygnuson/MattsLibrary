@@ -50,9 +50,9 @@ struct LinkNode : public Node<T> {
 	bool IsAfterLast() const {
 		return !m_ptr && !m_next;
 	}
-	/**Dereference a node.
-	\return A reference to the nodes data.*/
-	static Pointer Dereference(SelfType* node) {
+	/**Get a poitner to the nodes data.
+	\return A pointer to the nodes data.*/
+	static Pointer Get(SelfType* node) {
 		return node->m_ptr;
 	}
 #if _DEBUGLINKNODE

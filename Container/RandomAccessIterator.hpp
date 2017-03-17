@@ -288,7 +288,7 @@ RandomAccessIterator<T, NodeTypeT, Const>::operator->()
 #if _DEBUGRANDOMACCESSITERATOR
 	D_CheckValid();
 #endif
-	return NodeType::Dereference(m_node);
+	return NodeType::Get(m_node);
 }
 
 

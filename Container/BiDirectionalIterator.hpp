@@ -184,7 +184,7 @@ BiDirectionalIterator<T, NodeTypeT, Const>::operator->()
 #if _DEBUGBIDIRECTIONITERATOR
 	D_CheckValid();
 #endif
-	return NodeType::Dereference(m_node);
+	return NodeType::Get(m_node);
 }
 
 template<typename T, typename NodeTypeT, bool Const>
