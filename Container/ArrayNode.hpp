@@ -95,7 +95,7 @@ inline void ArrayNode<T>::D_CheckBounds() const
 		{
 			cg::Logger::LogError(__FUNCSTR__,
 				"The iterator is out of bounds.");
-			throw IteratorOutOfBoundsException();
+			throw OutOfBoundsException();
 		}
 
 	if (!m_ptr)
@@ -117,7 +117,7 @@ inline void ArrayNode<T>::D_CheckValid() const
 		{
 			cg::Logger::LogError(__FUNCSTR__,
 				"The iterator is out of bounds.");
-			throw IteratorOutOfBoundsException();
+			throw OutOfBoundsException();
 		}
 
 	if (!m_ptr)

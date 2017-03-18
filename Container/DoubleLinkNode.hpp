@@ -203,7 +203,7 @@ inline void DoubleLinkNode<T>::D_CheckBounds() const
 	{
 		cg::Logger::LogError(__FUNCSTR__,
 			"The iterator is out of bounds.");
-		throw IteratorOutOfBoundsException();
+		throw OutOfBoundsException();
 	}
 }
 template<typename T>

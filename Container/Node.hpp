@@ -1,10 +1,31 @@
 #pragma once
 
+#include "../Logger.hpp"
+#include "../Hash.hpp"
+
 namespace cg {
 
 template<typename T>
 struct Node
 {
+	struct OutOfBoundsException : public cg::Exception
+	{
+		/**Get the error.
+		\return A string with the error.*/
+		inline virtual std::string ToString() const override
+		{
+			return "The pointer is out of bounds.";
+		}
+	};
+	struct NullPtrException : public cg::Exception
+	{
+		/**Get the error.
+		\return A string with the error.*/
+		inline virtual std::string ToString() const override
+		{
+			return "The pointer is null.";
+		}
+	};
 	/**default ctor*/
 	Node() {};
 	/**The type of value contained*/

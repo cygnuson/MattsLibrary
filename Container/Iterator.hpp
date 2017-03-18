@@ -7,29 +7,29 @@
 
 namespace cg {
 
-struct IteratorOutOfBoundsException : public cg::Exception
-{
-	/**Get the error.
-	\return A string with the error.*/
-	inline virtual std::string ToString() const override
-	{
-		return "The pointer is out of bounds.";
-	}
-};
-struct NullPtrException : public cg::Exception
-{
-	/**Get the error.
-	\return A string with the error.*/
-	inline virtual std::string ToString() const override
-	{
-		return "The pointer is null.";
-	}
-};
 
 template<typename T, bool Const = false>
 class Iterator
 {
 public:
+	struct OutOfBoundsException : public cg::Exception
+	{
+		/**Get the error.
+		\return A string with the error.*/
+		inline virtual std::string ToString() const override
+		{
+			return "The pointer is out of bounds.";
+		}
+	};
+	struct NullPtrException : public cg::Exception
+	{
+		/**Get the error.
+		\return A string with the error.*/
+		inline virtual std::string ToString() const override
+		{
+			return "The pointer is null.";
+		}
+	};
 	/**The type of value contained*/
 	using value_type = T;
 	/**The type of value contained*/
