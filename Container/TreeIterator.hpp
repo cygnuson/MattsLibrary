@@ -134,6 +134,8 @@ template<typename T, typename NodeTypeT, bool Const, bool Reverse>
 inline typename TreeIterator<T, NodeTypeT, Const, Reverse>::PointerReturnType
 TreeIterator<T, NodeTypeT, Const, Reverse>::operator->()
 {
+	if (NodeType::IsBeforeBegin(m_node) || NodeType::IsAfterEnd(m_node))
+		throw OutOfBoundsException();
 	return m_node->Get();
 }
 

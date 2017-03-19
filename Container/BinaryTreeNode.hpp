@@ -514,65 +514,139 @@ inline void BinaryTreeNode<T>::AdvanceNext(SelfType ** node, SelfType * root)
 		throw OutOfBoundsException();
 	}
 	/**Keep track on if the right node needs done or not.*/
-	static bool doRightNode = true;
+	static bool doRight = true;
 	if (*node == root)
 		/*this is the root node. the next node is the leftmost node of the
 		right branch.*/
 	{
-		/*if !doRightNode and we are root, then we have traversed the highest
+		/*if !doRight and we are root, then we have traversed the highest
 		value node. Time to set the iterator to be the after end iterator.*/
-		if (!doRightNode)
+		if (!doRight || !(*node)->m_right)
 		{
 			**node = AfterEnd(root);
 			return;
 		}
-		if (!(*node)->m_right)
-			/*no right node, means this is the 'end' iterator.*/
-			throw OutOfBoundsException();
-		SelfType* newNode = (*node)->m_right->m_left;
-		while (1)
+		else
+			/*move to the right branch and go as left as we can.*/
 		{
-			auto tNode = newNode->m_left;
-			if (tNode)
-				newNode = tNode;
-			else
-				break;
+			*node = (*node)->m_right;
+			while (1)
+			{
+				if ((*node)->m_left)
+					*node = (*node)->m_left;
+				else
+					break;
+			}
 		}
-		(*node) = newNode;
-		return;
-	}
-	/*get the nodes parent.*/
-	SelfType* parent = GetParent(&root, *node);
-	/*if there is a right child, go to it.*/
-	if ((*node)->m_right && doRightNode)
-	{
-		*node = (*node)->m_right;
-		return;
-	}
-	/*check if this is the left or right node of the parent.*/
-	bool isLeftChild = parent->m_left == *node;
-	if (isLeftChild)
-		/*use the parent as the new node.*/
-	{
-		*node = parent;
-		doRightNode = true;
-		return;
 	}
 	else
-		/*this is the right child, so change to parent and advance again.*/
 	{
-		*node = parent;
-		doRightNode = false;
-		AdvanceNext(node, root);
-		doRightNode = true;
-		return;
+		/*if there is a right child, go to it.*/
+		if ((*node)->m_right && doRight)
+		{
+			*node = (*node)->m_right;
+			/*go as left as we can*/
+			while (1)
+			{
+				if ((*node)->m_left)
+					*node = (*node)->m_left;
+				else
+					break;
+			}
+		}
+		else
+		{
+			/*get the nodes parent.*/
+			SelfType* parent = GetParent(&root, *node);
+			/*check if this is the right child of my parent*/
+			bool iAmRightChild = parent->m_right == *node;
+			if (iAmRightChild)
+				/*use the parent as the new node.*/
+			{
+				doRight = false;
+				*node = parent;
+				AdvanceNext(node, root);
+				doRight = true;
+			}
+			else
+				/*this is the left child, so change to parent.*/
+			{
+				*node = parent;
+				doRight = true;
+			}
+		}
 	}
 }
 
 template<typename T>
 inline void BinaryTreeNode<T>::AdvancePrev(SelfType ** node, SelfType * root)
 {
-	
+	/**a static flag for direction controll with recursion down below.*/
+	static bool doLeft = true;
+	/*if this is the before begin node, we cannot advance further, so throw*/
+	if (IsBeforeBegin(*node))
+		throw OutOfBoundsException();
+	/*if this is the after end iterator, increment to the m_left.*/
+	else if (IsAfterEnd(*node))
+		(*node) = (*node)->m_left;
+	/*if this is the root node, we move to the largest value on the left.*/
+	else if (*node == root)
+	{
+		/*if doLeft is false or there is no left node, and we arrived at the 
+		root node its the end of the line.*/
+		if (!doLeft || !(*node)->m_left)
+			**node = BeforeBegin(root);
+		else
+		{
+			*node = (*node)->m_left;
+			while (1)
+			{
+				if ((*node)->m_right)
+					*node = (*node)->m_right;
+				else
+					break;
+			}
+			doLeft = true;
+		}
+	}
+	else
+	{
+		/*if I have a left child, and doLeft is true, move to the left child
+		and go as right as I can.*/
+		if ((*node)->m_left && doLeft)
+		{
+			*node = (*node)->m_left;
+			while (1)
+			{
+				if ((*node)->m_right)
+					*node = (*node)->m_right;
+				else
+					break;
+			}
+		}
+
+		/*If i dont have aleft child or doLeft is false*/
+		else
+		{
+			SelfType* parent = GetParent(&root, *node);
+			bool iAmLeftChild = parent->m_left == *node;
+			/*if I am a left child, i will goto my parent and set doLeft to no
+			and try to advance again.*/
+			if (iAmLeftChild)
+			{
+				doLeft = false;
+				*node = parent;
+				AdvancePrev(node,root);
+				doLeft = true;
+			}
+			/*if i am a right child, i will go to my parent.*/
+			else
+			{
+				*node = parent;
+				doLeft = true;
+			}
+		}
+	}
 }
 
 template<typename T>
