@@ -112,6 +112,39 @@ public:
 	\return The amount of space between the longest branch and the shortest
 	branch.*/
 	static std::size_t Imbalance(SelfType* node);
+	/**Find a value from downwards of a node.  The type of data stored in the
+	node must have == and <
+	\param node The node to start the seach with.
+	\param value The value to find.
+	\return A pointer to the node that contains that value, or nullptr if the
+	node and its children do not container that value.*/
+	static SelfType* Find(SelfType* node, ConstReference value);
+	/**Advance a node with respect to a root node.
+	\param node A pointer to a pointer to the node to advance.
+	\param root A pointer to a node that will act as as the root node for the
+	advancement.*/
+	static void AdvanceNext(SelfType** node, SelfType* root);
+	/**Advance a node backwards with respect to a root node.
+	\param node A pointer to a pointer to the node to advance.
+	\param root A pointer to a node that will act as as the root node for the
+	advancement.*/
+	static void AdvancePrev(SelfType** node, SelfType* root);
+	/**Get a BeforeBegin node.
+	\param root The root node that this beforBegin node will lead to.
+	\return A node specially configured for beforeBegin.*/
+	static SelfType BeforeBegin(SelfType* root);
+	/**Determine if a node is a before begin node.
+	\param node The node to check.
+	\return True if the node is a beforeBegin node.*/
+	static bool IsBeforeBegin(SelfType* node);
+	/**Determine if a node is an after end node.
+	\param node The node to check.
+	\return True if the node is an after end node.*/
+	static bool IsAfterEnd(SelfType* node);
+	/**Get a special after end node.
+	\param root The root node that this after end node will lead to.
+	\return An node that signifies after end.*/
+	static SelfType AfterEnd(SelfType* node);
 	/**Pointer member access.
 	\return A pointer to the node.*/
 	Pointer operator->();
@@ -120,6 +153,9 @@ public:
 	Reference operator*() {
 		return *(this->operator->());
 	}
+	/**Get the pointer for this node.
+	\return The pointer contained within.*/
+	Pointer Get();
 	/**Hash this node.
 	\return The hash.*/
 	std::size_t Hash() const;
@@ -130,10 +166,14 @@ public:
 	/**The right node.*/
 	SelfType* m_right;
 #if _DEBUGBINARYTREENODE
+	static std::size_t md_lastSize;
 	SelfType* md_parent = nullptr;
 	const SelfType* md_self = nullptr;
 #endif
 };
+
+template<typename T>
+std::size_t BinaryTreeNode<T>::md_lastSize = 0;
 
 template<typename T>
 inline BinaryTreeNode<T>::BinaryTreeNode(Pointer ptr)
@@ -181,9 +221,20 @@ inline void BinaryTreeNode<T>::Balance(SelfType ** nodep)
 		/*balance the right branches.*/
 		Balance(&(*nodep)->m_right);
 	/*balance the root node.*/
-	while (Imbalance(*nodep) > 1)
+	auto imbal = Imbalance(*nodep);
+	while (1)
 	{
 		BalanceImpl(nodep);
+		auto imbal2 = Imbalance(*nodep);
+		auto newImbal = imbal - imbal2;
+		if (newImbal == 0)
+		{
+			break;
+		}
+		else
+		{
+			imbal = imbal2;
+		}
 	}
 }
 
@@ -243,6 +294,9 @@ inline bool BinaryTreeNode<T>::Insert(SelfType ** nodep,
 		/*value is equal, do nothing.*/
 		attached = false;
 
+	if (attached)
+		/*We attached a single node, balance only once.*/
+		BalanceOnce(nodep);
 	return attached;
 }
 
@@ -280,6 +334,11 @@ BinaryTreeNode<T>::Remove(SelfType ** nodep, SelfType * vic)
 					/*attach the other child to vL (the new root).*/
 					Insert(&vL, vR);
 				}
+				if (!vL->m_right && vR)
+				{
+					/*attach vR directly to vL->m_right*/
+					Insert(&vL, vR);
+				}
 				if (recycle)
 					Insert(&vL, recycle);
 				return vL;
@@ -294,6 +353,11 @@ BinaryTreeNode<T>::Remove(SelfType ** nodep, SelfType * vic)
 					recycle = vR->m_left;
 					Remove(&vR, vR->m_left);
 					/*attach the other child to vR (the new root).*/
+					Insert(&vR, vL);
+				}
+				if (!vR->m_left && vL)
+				{
+					/*attach vL directly to vR->m_left*/
 					Insert(&vR, vL);
 				}
 				if (recycle)
@@ -421,6 +485,155 @@ inline std::size_t BinaryTreeNode<T>::Imbalance(SelfType * node)
 }
 
 template<typename T>
+inline typename BinaryTreeNode<T>::SelfType *
+BinaryTreeNode<T>::Find(SelfType * node, ConstReference value)
+{
+	if (!node)
+		return nullptr;
+	if (value > **node)
+		return Find(node->m_right, value);
+	else if (value < **node)
+		return Find(node->m_left, value);
+	else
+		return node;
+}
+
+template<typename T>
+inline void BinaryTreeNode<T>::AdvanceNext(SelfType ** node, SelfType * root)
+{
+	if (IsBeforeBegin(*node))
+		/*if is before begin, advance to the right node of the iterator which
+		is the starting point for the tree iterators.*/
+	{
+		(*node) = (*node)->m_right;
+		return;
+	}
+	if (IsAfterEnd(*node))
+		/*throw is trying to incriment an after end.*/
+	{
+		throw OutOfBoundsException();
+	}
+	/**Keep track on if the right node needs done or not.*/
+	static bool doRightNode = true;
+	if (*node == root)
+		/*this is the root node. the next node is the leftmost node of the
+		right branch.*/
+	{
+		/*if !doRightNode and we are root, then we have traversed the highest
+		value node. Time to set the iterator to be the after end iterator.*/
+		if (!doRightNode)
+		{
+			**node = AfterEnd(root);
+			return;
+		}
+		if (!(*node)->m_right)
+			/*no right node, means this is the 'end' iterator.*/
+			throw OutOfBoundsException();
+		SelfType* newNode = (*node)->m_right->m_left;
+		while (1)
+		{
+			auto tNode = newNode->m_left;
+			if (tNode)
+				newNode = tNode;
+			else
+				break;
+		}
+		(*node) = newNode;
+		return;
+	}
+	/*get the nodes parent.*/
+	SelfType* parent = GetParent(&root, *node);
+	/*if there is a right child, go to it.*/
+	if ((*node)->m_right && doRightNode)
+	{
+		*node = (*node)->m_right;
+		return;
+	}
+	/*check if this is the left or right node of the parent.*/
+	bool isLeftChild = parent->m_left == *node;
+	if (isLeftChild)
+		/*use the parent as the new node.*/
+	{
+		*node = parent;
+		doRightNode = true;
+		return;
+	}
+	else
+		/*this is the right child, so change to parent and advance again.*/
+	{
+		*node = parent;
+		doRightNode = false;
+		AdvanceNext(node, root);
+		doRightNode = true;
+		return;
+	}
+}
+
+template<typename T>
+inline void BinaryTreeNode<T>::AdvancePrev(SelfType ** node, SelfType * root)
+{
+	
+}
+
+template<typename T>
+inline  typename BinaryTreeNode<T>::SelfType
+BinaryTreeNode<T>::BeforeBegin(SelfType * root)
+{
+	SelfType ret;
+	ret.m_left = nullptr;
+	ret.m_ptr = nullptr;
+	auto node = root;
+	while (1)
+		/*Set the m_right ptr to the left most node of the root.*/
+	{
+		auto tNode = node->m_left;
+		if (tNode)
+			node = tNode;
+		else
+			break;
+	}
+	ret.m_right = node;
+	return ret;
+}
+
+template<typename T>
+inline bool BinaryTreeNode<T>::IsBeforeBegin(SelfType* node)
+{
+	return node->m_left == nullptr
+		&& node->m_right != nullptr
+		&& node->m_ptr == nullptr;
+}
+
+template<typename T>
+inline bool BinaryTreeNode<T>::IsAfterEnd(SelfType* node)
+{
+	return node->m_left != nullptr
+		&& node->m_right == nullptr
+		&& node->m_ptr == nullptr;
+}
+
+template<typename T>
+inline  typename BinaryTreeNode<T>::SelfType
+BinaryTreeNode<T>::AfterEnd(SelfType* root)
+{
+	SelfType ret;
+	ret.m_ptr = nullptr;
+	ret.m_right = nullptr;
+	auto node = root;
+	while (1)
+		/*Set the m_right ptr to the left most node of the root.*/
+	{
+		auto tNode = node->m_right;
+		if (tNode)
+			node = tNode;
+		else
+			break;
+	}
+	ret.m_left = node;
+	return ret;
+}
+
+template<typename T>
 inline typename BinaryTreeNode<T>::Pointer
 BinaryTreeNode<T>::operator->()
 {
@@ -431,10 +644,19 @@ BinaryTreeNode<T>::operator->()
 }
 
 template<typename T>
+inline typename BinaryTreeNode<T>::Pointer
+BinaryTreeNode<T>::Get()
+{
+	return m_ptr;
+}
+
+template<typename T>
 inline std::size_t BinaryTreeNode<T>::Hash() const
 {
 	{
-		std::size_t hash = 59 * *m_ptr;
+		std::size_t hash = 59;
+		if (m_ptr)
+			hash *= *m_ptr;
 		if (m_left)
 			hash *= m_left->Hash();
 		if (m_right)

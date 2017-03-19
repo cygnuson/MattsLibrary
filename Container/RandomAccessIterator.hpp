@@ -7,14 +7,15 @@
 
 namespace cg {
 
-template<typename T, typename NodeTypeT, bool Const = false>
-class RandomAccessIterator : public Iterator<T, Const>
+template<typename T, typename NodeTypeT, bool Const = false,
+	bool Reverse = false>
+	class RandomAccessIterator : public Iterator<T, Const>
 {
 public:
 	/**The type of node to use.*/
 	using NodeType = NodeTypeT;
 	/**The same type as this object.*/
-	using self_type = RandomAccessIterator<T, NodeTypeT, Const>;
+	using self_type = RandomAccessIterator<T, NodeTypeT, Const, Reverse>;
 	/**The same type as this object.*/
 	using SelfType = self_type;
 	/**An iterator tag to make this work with std stuff.*/
@@ -123,12 +124,6 @@ public:
 	inline bool operator>=(const self_type& other) const {
 		return !(*this < other);
 	}
-private:
-	/**Global plus operator for STL compatibility.*/
-	template<typename T, typename NodeTypeT, bool Const>
-	friend std::ptrdiff_t operator+(std::size_t,
-		const RandomAccessIterator<T, NodeTypeT, Const>&);
-
 #if _DEBUGRANDOMACCESSITERATOR
 	pointer md_beforeFirst = nullptr;
 	pointer md_afterLast = nullptr;
@@ -139,19 +134,27 @@ private:
 	/**Set the debug members for the bounds.*/
 	inline void D_DebugBounds(pointer beforeFirst, pointer afterLast);
 #endif
+private:
+	/**Global plus operator for STL compatibility.*/
+	template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+	friend std::ptrdiff_t operator+(std::size_t,
+		const RandomAccessIterator<T, NodeTypeT, Const, Reverse>&);
+
 	/**A pointer to the data.*/
 	NodeType* m_node;
 };
 
-template<typename T, typename NodeTypeT, bool Const>
-typename RandomAccessIterator<T, NodeTypeT, Const>::difference_type
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+typename RandomAccessIterator<T, NodeTypeT, Const, Reverse>::difference_type
 operator+(std::size_t lhs,
-	const RandomAccessIterator<T, NodeTypeT, Const>& rhs)
+	const RandomAccessIterator<T, NodeTypeT, Const, Reverse>& rhs)
 {
+	if (Reverse)
+		return rhs.m_node->m_ptr - lhs;
 	return rhs.m_node->m_ptr + lhs;
 }
-template<typename T, typename NodeTypeT, bool Const>
-inline RandomAccessIterator<T, NodeTypeT, Const>
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline RandomAccessIterator<T, NodeTypeT, Const, Reverse>
 ::RandomAccessIterator(pointer ptr)
 	:m_node(cg::New<NodeType>(ptr))
 {
@@ -161,8 +164,8 @@ inline RandomAccessIterator<T, NodeTypeT, Const>
 }
 
 
-template<typename T, typename NodeTypeT, bool Const>
-inline RandomAccessIterator<T, NodeTypeT, Const>
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline RandomAccessIterator<T, NodeTypeT, Const, Reverse>
 ::RandomAccessIterator(const self_type & other)
 	:m_node(other.m_node)
 {
@@ -173,8 +176,8 @@ inline RandomAccessIterator<T, NodeTypeT, Const>
 #endif
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline RandomAccessIterator<T, NodeTypeT, Const>
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline RandomAccessIterator<T, NodeTypeT, Const, Reverse>
 ::RandomAccessIterator(self_type && other)
 	:m_node(std::move(other.m_node))
 {
@@ -185,8 +188,8 @@ inline RandomAccessIterator<T, NodeTypeT, Const>
 #endif
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline void RandomAccessIterator<T, NodeTypeT, Const>::operator=(
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline void RandomAccessIterator<T, NodeTypeT, Const, Reverse>::operator=(
 	const self_type & other)
 {
 	m_node = other.m_node;
@@ -196,8 +199,8 @@ inline void RandomAccessIterator<T, NodeTypeT, Const>::operator=(
 #endif
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline void RandomAccessIterator<T, NodeTypeT, Const>::operator=(
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline void RandomAccessIterator<T, NodeTypeT, Const, Reverse>::operator=(
 	self_type && other)
 {
 	m_node = std::move(other.m_node);
@@ -207,71 +210,84 @@ inline void RandomAccessIterator<T, NodeTypeT, Const>::operator=(
 #endif
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline typename RandomAccessIterator<T, NodeTypeT, Const>::self_type &
-RandomAccessIterator<T, NodeTypeT, Const>::operator++()
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline typename RandomAccessIterator<T, NodeTypeT, Const, Reverse>::self_type &
+RandomAccessIterator<T, NodeTypeT, Const, Reverse>::operator++()
 {
-	NodeType::AdvanceNext(&m_node);
+	if (!Reverse)
+		NodeType::AdvanceNext(&m_node);
+	else
+		NodeType::AdvancePrev(&m_node);
 #if _DEBUGRANDOMACCESSITERATOR
 	D_CheckBounds();
 #endif
 	return *this;
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline typename RandomAccessIterator<T, NodeTypeT, Const>::self_type
-RandomAccessIterator<T, NodeTypeT, Const>::operator++(int nothing)
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline typename RandomAccessIterator<T, NodeTypeT, Const, Reverse>::self_type
+RandomAccessIterator<T, NodeTypeT, Const, Reverse>::operator++(int nothing)
 {
 	auto copy = *this;
 	++(*this);
 	return copy;
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline typename RandomAccessIterator<T, NodeTypeT, Const>::self_type &
-RandomAccessIterator<T, NodeTypeT, Const>::operator--()
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline typename RandomAccessIterator<T, NodeTypeT, Const, Reverse>::self_type &
+RandomAccessIterator<T, NodeTypeT, Const, Reverse>::operator--()
 {
-	NodeType::AdvancePrev(&m_node);
+	if (Reverse)
+		NodeType::AdvanceNext(&m_node);
+	else
+		NodeType::AdvancePrev(&m_node);
 #if _DEBUGRANDOMACCESSITERATOR
 	D_CheckBounds();
 #endif
 	return *this;
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline typename RandomAccessIterator<T, NodeTypeT, Const>::self_type
-RandomAccessIterator<T, NodeTypeT, Const>::operator--(int nothing)
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline typename RandomAccessIterator<T, NodeTypeT, Const, Reverse>::self_type
+RandomAccessIterator<T, NodeTypeT, Const, Reverse>::operator--(int nothing)
 {
 	auto copy = *this;
 	--(*this);
 	return copy;
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline typename RandomAccessIterator<T, NodeTypeT, Const>::self_type &
-RandomAccessIterator<T, NodeTypeT, Const>::operator+=(std::size_t amt)
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline typename RandomAccessIterator<T, NodeTypeT, Const, Reverse>::self_type &
+RandomAccessIterator<T, NodeTypeT, Const, Reverse>::operator+=(std::size_t amt)
 {
-	NodeType::AdvanceNext(&m_node, amt);
+	if (!Reverse)
+		NodeType::AdvanceNext(&m_node, amt);
+	else
+		NodeType::AdvancePrev(&m_node, amt);
 #if _DEBUGRANDOMACCESSITERATOR
 	D_CheckBounds();
 #endif
 	return *this;
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline typename RandomAccessIterator<T, NodeTypeT, Const>::self_type &
-RandomAccessIterator<T, NodeTypeT, Const>::operator-=(std::size_t amt)
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline typename RandomAccessIterator<T, NodeTypeT, Const, Reverse>::self_type &
+RandomAccessIterator<T, NodeTypeT, Const, Reverse>::operator-=(std::size_t amt)
 {
-	NodeType::AdvancePrev(&m_node, amt);
+	if (Reverse)
+		NodeType::AdvanceNext(&m_node, amt);
+	else
+		NodeType::AdvancePrev(&m_node, amt);
 #if _DEBUGRANDOMACCESSITERATOR
 	D_CheckBounds();
 #endif
 	return *this;
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline typename RandomAccessIterator<T, NodeTypeT, Const>::difference_type
-RandomAccessIterator<T, NodeTypeT, Const>::operator-(
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline typename
+RandomAccessIterator<T, NodeTypeT, Const, Reverse>::difference_type
+RandomAccessIterator<T, NodeTypeT, Const, Reverse>::operator-(
 	const self_type & other) const
 {
 #if _DEBUGRANDOMACCESSITERATOR
@@ -281,9 +297,10 @@ RandomAccessIterator<T, NodeTypeT, Const>::operator-(
 	return NodeType::Difference(m_node, other.m_node);
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline typename RandomAccessIterator<T, NodeTypeT, Const>::PointerReturnType
-RandomAccessIterator<T, NodeTypeT, Const>::operator->()
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline typename
+RandomAccessIterator<T, NodeTypeT, Const, Reverse>::PointerReturnType
+RandomAccessIterator<T, NodeTypeT, Const, Reverse>::operator->()
 {
 #if _DEBUGRANDOMACCESSITERATOR
 	D_CheckValid();
@@ -293,21 +310,24 @@ RandomAccessIterator<T, NodeTypeT, Const>::operator->()
 
 
 #if _DEBUGRANDOMACCESSITERATOR
-template<typename T, typename NodeTypeT, bool Const>
-inline void RandomAccessIterator<T, NodeTypeT, Const>::D_DebugBounds(
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline void RandomAccessIterator<T, NodeTypeT, Const, Reverse>::D_DebugBounds(
 	pointer beforeFirst,
 	pointer afterLast)
 {
 	md_beforeFirst = beforeFirst;
 	md_afterLast = afterLast;
+	m_node->D_DebugBounds(beforeFirst, afterLast);
 }
-template<typename T, typename NodeTypeT, bool Const>
-inline void RandomAccessIterator<T, NodeTypeT, Const>::D_CheckBounds() const
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline void 
+RandomAccessIterator<T, NodeTypeT, Const, Reverse>::D_CheckBounds() const
 {
 	m_node->D_CheckBounds();
 }
-template<typename T, typename NodeTypeT, bool Const>
-inline void RandomAccessIterator<T, NodeTypeT, Const>::D_CheckValid() const
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline void 
+RandomAccessIterator<T, NodeTypeT, Const, Reverse>::D_CheckValid() const
 
 {
 	m_node->D_CheckValid();

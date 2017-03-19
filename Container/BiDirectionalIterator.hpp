@@ -8,14 +8,15 @@
 namespace cg {
 
 
-template<typename T, typename NodeTypeT, bool Const = false>
+template<typename T, typename NodeTypeT, bool Const = false, 
+	bool Reverse = false>
 class BiDirectionalIterator : public Iterator<T, Const>
 {
 public:
 	/**The type of node to use.*/
 	using NodeType = NodeTypeT;
 	/**The same type as this object.*/
-	using self_type = BiDirectionalIterator<T, NodeTypeT, Const>;
+	using self_type = BiDirectionalIterator<T, NodeTypeT, Const, Reverse>;
 	/**The same type as this object.*/
 	using SelfType = self_type;
 	/**An iterator tag to make this work with std stuff.*/
@@ -100,9 +101,9 @@ private:
 };
 
 
-template<typename T, typename NodeTypeT, bool Const>
-inline void
-BiDirectionalIterator<T, NodeTypeT, Const>::PrintChain(std::streambuf * strm)
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline void BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::
+PrintChain(std::streambuf * strm)
 {
 	std::ostream out(strm);
 	std::size_t index = 0;
@@ -118,9 +119,9 @@ BiDirectionalIterator<T, NodeTypeT, Const>::PrintChain(std::streambuf * strm)
 	out << std::endl;
 }
 
-template<typename T, typename NodeTypeT, bool Const>
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
 inline void
-BiDirectionalIterator<T, NodeTypeT, Const>::PrintChainReverse(
+BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::PrintChainReverse(
 	std::streambuf * strm)
 {
 	std::ostream out(strm);
@@ -137,9 +138,10 @@ BiDirectionalIterator<T, NodeTypeT, Const>::PrintChainReverse(
 	out << std::endl;
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline typename BiDirectionalIterator<T, NodeTypeT, Const>::self_type &
-BiDirectionalIterator<T, NodeTypeT, Const>::operator++()
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline typename
+BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::self_type &
+BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::operator++()
 {
 #if _DEBUGBIDIRECTIONITERATOR
 	D_CheckBounds();
@@ -148,18 +150,19 @@ BiDirectionalIterator<T, NodeTypeT, Const>::operator++()
 	return *this;
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline typename BiDirectionalIterator<T, NodeTypeT, Const>::self_type
-BiDirectionalIterator<T, NodeTypeT, Const>::operator++(int nothing)
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline typename BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::self_type
+BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::operator++(int nothing)
 {
 	auto copy = *this;
 	++(*this);
 	return copy;
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline typename BiDirectionalIterator<T, NodeTypeT, Const>::self_type &
-BiDirectionalIterator<T, NodeTypeT, Const>::operator--()
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline typename 
+BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::self_type &
+BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::operator--()
 {
 #if _DEBUGBIDIRECTIONITERATOR
 	D_CheckBounds();
@@ -168,18 +171,19 @@ BiDirectionalIterator<T, NodeTypeT, Const>::operator--()
 	return *this;
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline typename BiDirectionalIterator<T, NodeTypeT, Const>::self_type
-BiDirectionalIterator<T, NodeTypeT, Const>::operator--(int nothing)
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline typename BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::self_type
+BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::operator--(int nothing)
 {
 	auto copy = *this;
 	--(*this);
 	return copy;
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline typename BiDirectionalIterator<T, NodeTypeT, Const>::PointerReturnType
-BiDirectionalIterator<T, NodeTypeT, Const>::operator->()
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline typename 
+BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::PointerReturnType
+BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::operator->()
 {
 #if _DEBUGBIDIRECTIONITERATOR
 	D_CheckValid();
@@ -187,20 +191,22 @@ BiDirectionalIterator<T, NodeTypeT, Const>::operator->()
 	return NodeType::Get(m_node);
 }
 
-template<typename T, typename NodeTypeT, bool Const>
-inline bool BiDirectionalIterator<T, NodeTypeT, Const>::
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline bool BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::
 operator==(const self_type & rhs) const {
 	return NodeType::Equal(m_node, rhs.m_node);
 }
 
 #if _DEBUGBIDIRECTIONITERATOR
-template<typename T, typename NodeTypeT, bool Const>
-inline void BiDirectionalIterator<T, NodeTypeT, Const>::D_CheckBounds() const
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline void 
+BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::D_CheckBounds() const
 {
 	m_node->D_CheckBounds();
 }
-template<typename T, typename NodeTypeT, bool Const>
-inline void BiDirectionalIterator<T, NodeTypeT, Const>::D_CheckValid() const
+template<typename T, typename NodeTypeT, bool Const, bool Reverse>
+inline void 
+BiDirectionalIterator<T, NodeTypeT, Const, Reverse>::D_CheckValid() const
 {
 	m_node->D_CheckValid();
 }

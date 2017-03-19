@@ -41,7 +41,7 @@ public:
 	/**A poitner of value_type*/
 	using pointer = value_type*;
 	/**A poitner of value_type*/
-	using Pointer = pointer*;
+	using Pointer = pointer;
 	/**the const ref type.*/
 	using const_reference = const value_type&;
 	/**the const ref type.*/

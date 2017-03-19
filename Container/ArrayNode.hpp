@@ -146,13 +146,13 @@ inline ArrayNode<T>::~ArrayNode()
 template<typename T>
 inline void ArrayNode<T>::AdvanceNext(SelfType ** node)
 {
-	++(*node);
+	++(*node)->m_ptr;
 }
 
 template<typename T>
 inline void ArrayNode<T>::AdvanceNext(SelfType ** node, std::size_t amt)
 {
-	(*node) += amt;
+	(*node)->m_ptr += amt;
 }
 
 template<typename T>
