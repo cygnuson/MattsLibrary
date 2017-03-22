@@ -63,7 +63,10 @@ template<typename T>
 inline void Delete(const std::string& note, T * loc)
 {
 #if defined(_DEBUG)
-	DataLeak::m_allocated -= sizeof(T);
+	std::size_t allocAmt = (DataLeak::m_records[loc].second);
+	/*T may be polymorphic. Subtract the amount allocated, not the size of T.*/
+	DataLeak::m_allocated -= allocAmt;
+	DataLeak::m_records.erase(loc);
 	cg::Logger::LogNote(1, "Delete: ", sizeof(T), " bytes.");
 #endif
 	delete loc;
@@ -130,6 +133,11 @@ std::string MemoryReport()
 			report += std::to_string(begin->second.second);
 			report += "\n";
 		}
+	}
+	else
+	{
+		report += "\n";
+		report += "There are no outstanding memory allocations.";
 	}
 	return report + "\n\n\n";
 #else

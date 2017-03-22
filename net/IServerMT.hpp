@@ -18,7 +18,7 @@ public:
 	data from the clients.*/
 	IServerMT(int dataThreads = 5);
 	/**Virt decon*/
-	~IServerMT();
+	virtual ~IServerMT();
 	/**Start the server.
 	\param port The port to start on.*/
 	void Start(uint16_t port);

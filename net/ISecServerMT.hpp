@@ -48,6 +48,8 @@ public key and then an AES key.*/
 class ISecServerMT : public IServerMT
 {
 public:
+	/**Destroy*/
+	virtual ~ISecServerMT();
 	/**Do something after a socket is excepted.  Will run after the security
 	protocols have run on top of the IServerMT.
 	\param sock The socket that was excepted.*/

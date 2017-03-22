@@ -2,7 +2,10 @@
 
 namespace cg {
 namespace net {
+ISecServerMT::~ISecServerMT()
+{
 
+}
 SocketRW ISecServerMT::GetSocketRW(Socket & sock)
 {
 	auto& cd = m_secClients.Writer()->at(sock.Id());

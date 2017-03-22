@@ -4,6 +4,7 @@
 #include <string>
 
 #include "Logger.hpp"
+#include "exception.hpp"
 
 #if defined(_DEBUG)
 #include <map>
@@ -12,6 +13,15 @@
 namespace cg {
 
 #if defined(_DEBUG)
+
+class DeleteArrayException : public cg::Exception
+{
+	inline virtual std::string ToString() const override
+	{
+		return "Attempted to delete an array with Delete() and not DeleteA().";
+	}
+
+};
 
 template<typename T>
 class DataLeakImpl;

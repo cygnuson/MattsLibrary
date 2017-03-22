@@ -9,6 +9,7 @@ namespace cg {
 class RSADecryptFilter : public cg::Filter
 {
 public:
+	virtual ~RSADecryptFilter() {};
 	/**always returns tre because the size will always change.*/
 	virtual bool SizeChanges() const
 	{
@@ -54,6 +55,7 @@ private:
 class RSAEncryptFilter : public cg::Filter
 {
 public:
+	virtual ~RSAEncryptFilter() {};
 	/**always returns tre because the size will always change.*/
 	virtual bool SizeChanges() const
 	{
