@@ -39,6 +39,8 @@ public:/**This type.*/
 	TreeListImpl() {
 		Init();
 	};
+	/*clean up*/
+	~TreeListImpl();
 	/**Create an array list with a set of values.
 	\param begin A start iterator.
 	\param end An end iterator.*/
@@ -149,6 +151,12 @@ template<typename T,
 inline void TreeListImpl<T, IteratorType>::Init()
 {
 
+}
+
+template<typename T,
+	template <typename, typename, bool, bool> typename IteratorType>
+inline TreeListImpl<T, IteratorType>::~TreeListImpl()
+{
 }
 
 template<typename T,

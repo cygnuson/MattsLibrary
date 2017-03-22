@@ -85,6 +85,21 @@ cg::ArrayView SocketRW::Read(std::size_t expectedSize,
 	return av;
 }
 
+void SocketRW::SetReaderFilter(cg::Filter * newFilter)
+{
+	if (m_readFilter)
+		delete m_readFilter;
+	m_readFilter = newFilter;
+}
+
+void SocketRW::SetWriterFilter(cg::Filter * newFilter)
+{
+	if (m_writeFilter)
+		delete m_writeFilter;
+	m_writeFilter = newFilter;
+}
+
+
 bool SocketRW::ReadReady(std::ptrdiff_t timeout) const
 {
 	CheckAndReport();
