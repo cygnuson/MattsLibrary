@@ -340,7 +340,7 @@ bool Socket::Accept(Socket & sock, bool block) const
 		addr.first, "\n\t   Port=", addr.second);
 	return true;
 }
-bool Socket::IsOpen() const
+int Socket::IsOpen() const
 {
 	if (m_id == InvalidId)
 		return false;
@@ -350,18 +350,19 @@ bool Socket::IsOpen() const
 	Unlock();
 	if (got == 0)
 	{
-		return false;
+		return 0;
 	}
 	else if (got == -1)
 	{
-		if (NetworkException::GetErrno() == Error::WouldBlock)
-			return true;
+		auto code = NetworkException::GetErrno();
+		if (code == Error::WouldBlock)
+			return 1;
 		else
-			return false;
+			return -1;
 	}
 	else
 	{
-		return true;
+		return 1;
 	}
 }
 addrinfo* Socket::MakeAddress(std::string && address,

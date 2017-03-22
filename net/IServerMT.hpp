@@ -26,6 +26,8 @@ public:
 	void Stop();
 	/**Wait untill the server stops on its own.*/
 	void Wait();
+	/**Notify all waiting things managed by this server.*/
+	void NotifyAllThreads();
 protected:
 	/**Change the speed of the acceptor loop (default 100 FPS).
 	\param fps The FPS of the loop.*/

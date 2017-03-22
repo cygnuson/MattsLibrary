@@ -49,6 +49,8 @@ public:
 	client.*/
 	cg::net::SocketRW GetSocketRW(cg::net::Socket& sock);
 private:
+	/**The type of map used for the client descriptor.*/
+	using CDMap = std::map<std::size_t, ClientDescriptor>;
 	/**Do somthing on a socket right after it gets accepted.
 	\param sock The socket that was just accepted.
 	\return True if the socket should stay in the list. False if it should be
@@ -71,7 +73,7 @@ private:
 		GetClientDescriptor(const cg::net::Socket& sock);
 
 	/**A list of client descriptors.*/
-	std::map<std::size_t,ClientDescriptor> m_secClients;
+	cg::LockBox<CDMap> m_secClients;
 };
 
 }

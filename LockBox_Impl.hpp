@@ -46,7 +46,7 @@ inline void LockBox<Container>::WaitForElements(bool& extBool)
 		return;
 	std::unique_lock<std::mutex> lock(m_waitMutex);
 	mcv_waiter.wait(lock, [&]() {
-		return (this->Empty() || !extBool);
+		return (!this->Empty() || !extBool);
 	});
 	LogNote(1, "Finished waiting.");
 }
@@ -58,7 +58,7 @@ inline void LockBox<Container>::WaitForElements(std::atomic_bool & extBool)
 		return;
 	std::unique_lock<std::mutex> lock(m_waitMutex);
 	mcv_waiter.wait(lock, [&]() {
-		return (this->Empty() || !extBool.load());
+		return (!this->Empty() || !extBool.load());
 	});
 	LogNote(1, "Finished waiting.");
 }

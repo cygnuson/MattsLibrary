@@ -47,10 +47,10 @@ void NetLog::WriteMessage(const cg::NetLoggerMessage & msg)
 	for (int i = 0; i < 5; ++i)
 	{
 		try {
-			if (ms_client->IsOpen())
-				break;
-			else
+			if (ms_client->IsOpen() != 1)
 				ms_client->Connect("::1", ms_port);
+			else
+				break;
 		}
 		catch (const cg::Exception& e)
 		{
@@ -58,7 +58,7 @@ void NetLog::WriteMessage(const cg::NetLoggerMessage & msg)
 				e.What());
 		}
 	}
-	if (!ms_client->IsOpen())
+	if (ms_client->IsOpen() != 1)
 	{
 		cg::Logger::LogError("The NetLog could not connect.");
 		return;

@@ -33,7 +33,7 @@ void cg::EchoServer::Start(uint16_t port)
 		for (; it != end; ++it)
 		{
 			auto& sock = *it;
-			if (!sock.IsOpen())
+			if (sock.IsOpen() != 1)
 			{
 				cg::Logger::LogNote(1, __FUNCSTR__, "The socket ", it->Id(),
 					" will be closed.");
@@ -55,7 +55,7 @@ void cg::EchoServer::Start(uint16_t port)
 	auto end = m_clients.end();
 	for (; it != end; ++it)
 	{
-		if (it->IsOpen())
+		if (it->IsOpen() == 1)
 			it->Close();
 	}
 	m_serverSocket.Close();
@@ -113,7 +113,7 @@ void cg::EchoClient::Start(uint16_t port, const std::string & address)
 	while (m_run)
 	{
 		sLimit();
-		if (!m_socket.IsOpen())
+		if (m_socket.IsOpen() != 1)
 		{
 			auto oldLog = cg::Logger::ActiveLogName();
 			cg::Logger::ChangeLog("STDCOUTLOG");

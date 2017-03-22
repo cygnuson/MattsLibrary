@@ -55,6 +55,12 @@ void IServerMT::Wait()
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
+void IServerMT::NotifyAllThreads()
+{
+	m_readyBox.Notify();
+	m_clientBox.Notify();
+}
+
 void IServerMT::ChangeAcceptorSpeed(double fps)
 {
 	m_acceptorLimit.FPS(fps);
@@ -78,7 +84,7 @@ void IServerMT::DataLoop()
 			continue;
 		sock = *writer->begin();
 		writer->pop_front();
-		if (!sock->IsOpen())
+		if (sock->IsOpen() != 1)
 		{
 			cg::Delete(sock);
 		}
@@ -171,21 +177,27 @@ void IServerMT::ScanForReadyLoop()
 		auto end = writer->end();
 		for (; it != end; ++it)
 		{
-			if (!(*it)->IsOpen())
+			int open = (*it)->IsOpen();
+			if (open != 1)
 			{
-				SocketClosed(**it, false);
-				it = writer->erase(it);
-				continue;
-			}
-			if ((*it)->ReadReady())
-			{
-				m_readyBox.Writer()->push_back(*it);
+				SocketClosed(**it, open == 0 ? true : false);
 				it = writer->erase(it);
 				if (it == end)
 					/*If it was the last thing in the list, it now equals .end
 					and we will break instead of trying to increment it.*/
 					break;
-				m_readyBox.Notify();
+				else
+					continue;
+			}
+			if ((*it)->ReadReady())
+			{
+				m_readyBox.Writer()->push_back(*it);
+				it = writer->erase(it);
+					m_readyBox.Notify();
+				if (it == end)
+					/*If it was the last thing in the list, it now equals .end
+					and we will break instead of trying to increment it.*/
+					break;
 			}
 		}
 	}
@@ -194,6 +206,8 @@ void IServerMT::ScanForReadyLoop()
 
 void IServerMT::AcceptLoop()
 {
+	while (m_activeDataThreads < m_dataThreadCount)
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	while (m_run)
 	{
 		m_acceptorLimit();

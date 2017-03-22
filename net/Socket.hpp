@@ -218,8 +218,9 @@ struct Socket : cg::net::NetworkObject,
 		bool block = true) const;
 	/**Determine the status of a socket.
 	
-	\return True if the socket is open.*/
-	bool IsOpen() const;
+	\return 1 if the socket is open. 0 if the socket was closed gracefullly. -1
+	if the socket was closed non-gracefully.*/
+	int IsOpen() const;
 protected:/********************************************************************PROTECTED**********/
 	using cg::LogAdaptor<Socket>::EnableLogs;
 	using cg::LogAdaptor<Socket>::LogNote;

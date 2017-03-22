@@ -75,9 +75,10 @@ void IServer::CheckClients()
 	{
 		m_updateSpeed();
 		/*if its close, erase it and skip it.*/
-		if (!it->IsOpen())
+		int open = it->IsOpen();
+		if (open != 1)
 		{
-			SocketRemoved(false, it);
+			SocketRemoved(open == 0 ? true : false, it);
 			it = m_clients.erase(it);
 			continue;
 		}
