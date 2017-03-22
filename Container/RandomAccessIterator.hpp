@@ -156,7 +156,7 @@ operator+(std::size_t lhs,
 template<typename T, typename NodeTypeT, bool Const, bool Reverse>
 inline RandomAccessIterator<T, NodeTypeT, Const, Reverse>
 ::RandomAccessIterator(pointer ptr)
-	:m_node(cg::New<NodeType>(ptr))
+	:m_node(cg::New<NodeType>(__FUNCSTR__,ptr))
 {
 #if _DEBUGRANDOMACCESSITERATOR
 	m_node->D_DebugBounds(md_beforeFirst, md_afterLast);

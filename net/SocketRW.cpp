@@ -100,14 +100,14 @@ cg::ArrayView SocketRW::Read(int64_t expectedSize,
 void SocketRW::SetReaderFilter(cg::Filter * newFilter)
 {
 	if (m_readFilter)
-		delete m_readFilter;
+		cg::Delete(__FUNCSTR__,m_readFilter);
 	m_readFilter = newFilter;
 }
 
 void SocketRW::SetWriterFilter(cg::Filter * newFilter)
 {
 	if (m_writeFilter)
-		delete m_writeFilter;
+		cg::Delete(__FUNCSTR__,m_writeFilter);
 	m_writeFilter = newFilter;
 }
 

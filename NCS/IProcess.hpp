@@ -90,13 +90,14 @@ inline void IProcess::Wait()
 
 inline void IProcess::AsyncUpdateOutput(double fps)
 {
-	mt_outputSync = cg::New<std::thread>(&IProcess::UpdateOutputLoop,
-		this, fps);
+	mt_outputSync = cg::New<std::thread>(__FUNCSTR__,
+		&IProcess::UpdateOutputLoop,this, fps);
 }
 
 inline void IProcess::AsyncUpdateInput(double fps)
 {
-	mt_inputSync = cg::New<std::thread>(&IProcess::UpdateInputLoop, this, fps);
+	mt_inputSync = cg::New<std::thread>(__FUNCSTR__,
+		&IProcess::UpdateInputLoop, this, fps);
 }
 inline void IProcess::UpdateOutputLoop(double fps)
 {

@@ -65,7 +65,7 @@ struct HashData
 struct AESData
 {
 	/**Empty aes data with a new byte block*/
-	AESData() :m_data(cg::New<CryptoPP::SecByteBlock>())
+	AESData() :m_data(cg::New<CryptoPP::SecByteBlock>(__FUNCSTR__))
 	{
 		m_created = true;
 	};
@@ -85,7 +85,7 @@ struct AESData
 	~AESData()
 	{
 		if (m_created) 
-			cg::DeleteA(m_data);
+			cg::DeleteA(__FUNCSTR__,m_data);
 	}
 	/**The data.*/
 	CryptoPP::SecByteBlock* m_data;

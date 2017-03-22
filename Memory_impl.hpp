@@ -5,11 +5,12 @@
 namespace cg {
 
 template<typename T, typename ...Args>
-inline T * New(Args && ...args)
+inline T * New(const std::string& note, Args && ...args)
 {
 #if defined(_DEBUG)
 	auto ptr = new T(std::forward<Args>(args)...);
-	DataLeak::m_records[ptr] = sizeof(T);
+	DataLeak::m_records[(void*)ptr].first = note;
+	DataLeak::m_records[ptr].second = sizeof(T);
 	DataLeak::m_allocated += sizeof(T);
 	DataLeak::m_totalAllocated += sizeof(T);
 	if (DataLeak::m_allocated > DataLeak::m_peekRam)
@@ -22,7 +23,7 @@ inline T * New(Args && ...args)
 }
 
 template<typename T, typename ...Args>
-T* PNew(T * loc, Args && ...args)
+T* PNew(const std::string& note, T * loc, Args && ...args)
 {
 #if defined(_DEBUG)
 	auto ptr = new (loc) T(std::forward<Args>(args)...);
@@ -34,7 +35,7 @@ T* PNew(T * loc, Args && ...args)
 }
 
 template<typename T>
-inline T* NewA(std::size_t units, bool init)
+inline T* NewA(const std::string& note, std::size_t units, bool init)
 {
 #if defined(_DEBUG)
 	T* ptr = nullptr;
@@ -42,7 +43,8 @@ inline T* NewA(std::size_t units, bool init)
 		ptr = new T[units]();
 	else
 		ptr = new T[units];
-	DataLeak::m_records[(void*)ptr] = units * sizeof(T);
+	DataLeak::m_records[(void*)ptr].first = note;
+	DataLeak::m_records[(void*)ptr].second = units * sizeof(T);
 	DataLeak::m_allocated += units * sizeof(T);
 	DataLeak::m_totalAllocated += units * sizeof(T);
 	if (DataLeak::m_allocated > DataLeak::m_peekRam)
@@ -58,7 +60,7 @@ inline T* NewA(std::size_t units, bool init)
 }
 
 template<typename T>
-inline void Delete(T * loc)
+inline void Delete(const std::string& note, T * loc)
 {
 #if defined(_DEBUG)
 	DataLeak::m_allocated -= sizeof(T);
@@ -68,11 +70,12 @@ inline void Delete(T * loc)
 }
 
 template<typename T>
-inline void DeleteA(T * loc)
+inline void DeleteA(const std::string& note, T * loc)
 {
 #if defined(_DEBUG)
-	DataLeak::m_allocated -= (DataLeak::m_records[loc]);
-	cg::Logger::LogNote(1, "DeleteA: ", (DataLeak::m_records[loc]), " bytes.");
+	DataLeak::m_allocated -= (DataLeak::m_records[loc].second);
+	cg::Logger::LogNote(1, "DeleteA: ", (DataLeak::m_records[loc].second),
+		" bytes.");
 	DataLeak::m_records.erase(loc);
 #endif
 	delete[] loc;
@@ -116,6 +119,18 @@ std::string MemoryReport()
 	report += std::to_string(TotalMemoryUsage());
 	report += "\n\t     PeekAllocated: ";
 	report += std::to_string(PeekMemoryUsage());
+	if (DataLeakImpl<int>::m_records.size() > 0)
+	{
+		report += "\n\n\nCalls that produce leaks:\n\n\n";
+		auto begin = DataLeakImpl<int>::m_records.begin();
+		auto end = DataLeakImpl<int>::m_records.end();
+		for (; begin != end; ++begin)
+		{
+			report += begin->second.first;
+			report += std::to_string(begin->second.second);
+			report += "\n";
+		}
+	}
 	return report + "\n\n\n";
 #else
 	return "The memory tracker is off.";

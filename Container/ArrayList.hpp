@@ -142,7 +142,7 @@ template<typename T,
 	template <typename,typename,bool, bool> typename IteratorType>
 inline ArrayListImpl<T,IteratorType>::~ArrayListImpl()
 {
-	cg::DeleteA(m_data);
+	cg::DeleteA(__FUNCSTR__,m_data);
 }
 
 template<typename T,
@@ -189,11 +189,11 @@ template<typename T,
 inline void ArrayListImpl<T,IteratorType>::Reserve(std::size_t amt)
 {
 	m_cap += amt;
-	auto newData = cg::NewA<T>(m_cap);
+	auto newData = cg::NewA<T>(__FUNCSTR__, m_cap);
 	std::memcpy(newData, m_data, m_size * sizeof(T));
 	auto oldData = m_data;
 	m_data = newData;
-	cg::DeleteA(oldData);
+	cg::DeleteA(__FUNCSTR__,oldData);
 }
 
 template<typename T,
@@ -389,7 +389,7 @@ inline void ArrayListImpl<T,IteratorType>::Init(std::size_t cap)
 	if (cap)
 		m_cap = cap;
 	if (!m_data)
-		m_data = cg::NewA<T>(m_cap);
+		m_data = cg::NewA<T>(__FUNCSTR__,m_cap);
 }
 
 template<typename T,

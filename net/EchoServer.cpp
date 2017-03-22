@@ -63,7 +63,8 @@ void cg::EchoServer::Start(uint16_t port)
 
 void cg::EchoServer::AsyncStart(uint16_t port)
 {
-	m_asyncThread = cg::New<std::thread>(&cg::EchoServer::Start, this, port);
+	m_asyncThread = cg::New<std::thread>(__FUNCSTR__,
+		&cg::EchoServer::Start, this, port);
 }
 
 cg::EchoServer::~EchoServer()
@@ -147,7 +148,8 @@ void cg::EchoClient::Start(uint16_t port, const std::string & address)
 void cg::EchoClient::AsyncStart(uint16_t port, const std::string& address)
 {
 	m_asyncThread =
-		cg::New<std::thread>(&cg::EchoClient::Start, this, port, address);
+		cg::New<std::thread>(__FUNCSTR__,
+			&cg::EchoClient::Start, this, port, address);
 }
 
 void cg::EchoClient::Stop()

@@ -183,7 +183,7 @@ inline BinaryTreeNode<T>::BinaryTreeNode(Pointer ptr)
 template<typename T>
 inline BinaryTreeNode<T>::~BinaryTreeNode()
 {
-	cg::Delete(m_ptr);
+	cg::Delete(__FUNCSTR__,m_ptr);
 }
 
 template<typename T>
@@ -658,7 +658,7 @@ template<typename T>
 inline  typename BinaryTreeNode<T>::SelfType*
 BinaryTreeNode<T>::BeforeBegin(SelfType * root)
 {
-	auto ret = cg::New<SelfType>();
+	auto ret = cg::New<SelfType>(__FUNCSTR__);
 	ret->m_left = nullptr;
 	ret->m_ptr = nullptr;
 	auto node = root;
@@ -695,7 +695,7 @@ template<typename T>
 inline  typename BinaryTreeNode<T>::SelfType*
 BinaryTreeNode<T>::AfterEnd(SelfType* root)
 {
-	auto ret = cg::New<SelfType>();
+	auto ret = cg::New<SelfType>(__FUNCSTR__);
 	ret->m_ptr = nullptr;
 	ret->m_right = nullptr;
 	auto node = root;

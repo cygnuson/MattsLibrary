@@ -14,13 +14,18 @@ IServerMT::IServerMT(int dataThreads)
 
 IServerMT::~IServerMT()
 {
-	Stop();
+	if (!m_serverStopped)
+	{
+		Stop();
+	}
 	for (int i = 0; i < m_dataThreadCount; ++i)
 	{
 		if (m_dataThreads[i])
-			cg::Delete(m_dataThreads[i]);
+			cg::Delete(__FUNCSTR__,m_dataThreads[i]);
 	}
-	cg::DeleteA(m_dataThreads);
+	cg::DeleteA(__FUNCSTR__,m_dataThreads);
+	cg::Delete(__FUNCSTR__,mt_acceptScanner);
+	cg::Delete(__FUNCSTR__,mt_readyScanner);
 }
 
 void IServerMT::Start(uint16_t port)
@@ -30,10 +35,12 @@ void IServerMT::Start(uint16_t port)
 	m_acceptorLimit.FPS(100);
 	m_readyLimit.FPS(100);
 	m_run = true;
-	m_dataThreads = cg::NewA<std::thread*>(m_dataThreadCount);
+	m_serverStopped = false;
+	m_dataThreads = cg::NewA<std::thread*>(__FUNCSTR__,m_dataThreadCount);
 	for (int i = 0; i < m_dataThreadCount; ++i)
 	{
-		m_dataThreads[i] = cg::New<std::thread>(&IServerMT::DataLoop, this);
+		m_dataThreads[i] = cg::New<std::thread>(__FUNCSTR__, 
+			&IServerMT::DataLoop, this);
 	}
 	m_serverSocket.Bind(true, port);
 	AutoAccept();
@@ -43,10 +50,11 @@ void IServerMT::Start(uint16_t port)
 void IServerMT::Stop()
 {
 	m_run = false;
-	m_readyBox.Notify();
-	m_clientBox.Notify();
+	m_readyBox.NotifyAll();
+	m_clientBox.NotifyAll();
 	CloseAll();
 	WaitForThreads();
+	m_serverStopped = true;
 }
 
 void IServerMT::Wait()
@@ -86,7 +94,7 @@ void IServerMT::DataLoop()
 		writer->pop_front();
 		if (sock->IsOpen() != 1)
 		{
-			cg::Delete(sock);
+			cg::Delete(__FUNCSTR__,sock);
 		}
 		/*sock should be ready beause it was in the ready list.*/
 		ProcessSocket(*sock);
@@ -120,7 +128,7 @@ void IServerMT::CloseAll()
 		for (; it != end; ++it)
 		{
 			(*it)->Close();
-			cg::Delete(*it);
+			cg::Delete(__FUNCSTR__,*it);
 		}
 	}
 	{
@@ -130,7 +138,7 @@ void IServerMT::CloseAll()
 		for (; it != end; ++it)
 		{
 			(*it)->Close();
-			cg::Delete(*it);
+			cg::Delete(__FUNCSTR__,*it);
 		}
 	}
 }
@@ -154,14 +162,16 @@ void IServerMT::WaitForThreads()
 void IServerMT::ScanForReady()
 {
 	m_readyScannerStopped = false;
-	mt_readyScanner = cg::New<std::thread>(&IServerMT::ScanForReadyLoop, this);
+	mt_readyScanner = cg::New<std::thread>(__FUNCSTR__,
+		&IServerMT::ScanForReadyLoop, this);
 }
 
 void IServerMT::AutoAccept()
 {
 	m_acceptScannerStopped = false;
 	m_serverSocket.Listen();
-	mt_acceptScanner = cg::New<std::thread>(&IServerMT::AcceptLoop, this);
+	mt_acceptScanner = cg::New<std::thread>(__FUNCSTR__,
+		&IServerMT::AcceptLoop, this);
 }
 
 void IServerMT::ScanForReadyLoop()
@@ -193,7 +203,7 @@ void IServerMT::ScanForReadyLoop()
 			{
 				m_readyBox.Writer()->push_back(*it);
 				it = writer->erase(it);
-					m_readyBox.Notify();
+				m_readyBox.Notify();
 				if (it == end)
 					/*If it was the last thing in the list, it now equals .end
 					and we will break instead of trying to increment it.*/
@@ -206,15 +216,13 @@ void IServerMT::ScanForReadyLoop()
 
 void IServerMT::AcceptLoop()
 {
-	while (m_activeDataThreads < m_dataThreadCount)
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	while (m_run)
 	{
 		m_acceptorLimit();
 		while (m_serverSocket.ReadReady())
 		{
 			auto writer = m_clientBox.Writer();
-			auto sock = cg::New<cg::net::Socket>();
+			auto sock = cg::New<cg::net::Socket>(__FUNCSTR__);
 			auto accepted = m_serverSocket.Accept(*sock, false);
 			if (accepted)
 			{
@@ -224,7 +232,7 @@ void IServerMT::AcceptLoop()
 			else
 			{
 				/*not accepted for some reason, delete it.*/
-				cg::Delete(sock);
+				cg::Delete(__FUNCSTR__,sock);
 			}
 		}
 	}

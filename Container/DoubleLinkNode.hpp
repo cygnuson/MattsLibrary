@@ -116,7 +116,7 @@ inline DoubleLinkNode<T>::~DoubleLinkNode()
 #if _DEBUGDOUBLELINKNODE
 		D_CheckValid();
 #endif
-		cg::Delete(m_ptr);
+		cg::Delete(__FUNCSTR__,m_ptr);
 	}
 }
 
@@ -171,9 +171,10 @@ template<typename ...Args>
 inline typename DoubleLinkNode<T>::self_type *
 DoubleLinkNode<T>::InsertNewAfter(self_type * node, Args && ...args)
 {
-	self_type* newNode = cg::New<self_type>();
+	self_type* newNode = cg::New<self_type>(__FUNCSTR__);
 	/*create data space*/
-	newNode->m_ptr = cg::New<value_type>(std::forward<Args>(args)...);
+	newNode->m_ptr = cg::New<value_type>(__FUNCSTR__,
+		std::forward<Args>(args)...);
 	InsertAfter(node, newNode);
 	return newNode;
 }
@@ -182,9 +183,10 @@ template<typename ...Args>
 inline typename DoubleLinkNode<T>::self_type *
 DoubleLinkNode<T>::InsertNewBefore(self_type * node, Args && ...args)
 {
-	self_type* newNode = cg::New<self_type>();
+	self_type* newNode = cg::New<self_type>(__FUNCSTR__);
 	/*create data space*/
-	newNode->m_ptr = cg::New<value_type>(std::forward<Args>(args)...);
+	newNode->m_ptr = cg::New<value_type>(__FUNCSTR__,
+		std::forward<Args>(args)...);
 	InsertBefore(node, newNode);
 	return newNode;
 }

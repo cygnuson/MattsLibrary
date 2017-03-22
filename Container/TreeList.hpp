@@ -130,7 +130,7 @@ inline void TreeListImpl<T, IteratorType>::
 Emplace(Args && ...args)
 {
 	auto newNode = cg::New<BinaryTreeNode<T>>(
-		cg::New<value_type>(std::forward<Args>(args)...));
+		cg::New<value_type>(__FUNCSTR__,std::forward<Args>(args)...));
 	if (!m_rootNode)
 		m_rootNode = newNode;
 	else
@@ -164,7 +164,7 @@ template<typename T,
 inline void TreeListImpl<T, IteratorType>::Push(const T & obj)
 {
 	auto newNode = cg::New<BinaryTreeNode<T>>(
-		cg::New<value_type>(obj));
+		cg::New<value_type>(__FUNCSTR__,obj));
 	if (!m_rootNode)
 		m_rootNode = newNode;
 	else

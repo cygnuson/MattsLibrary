@@ -78,7 +78,7 @@ inline LinkNode<T>::~LinkNode()
 #if _DEBUGLINKNODE
 		D_CheckValid();
 #endif
-		cg::Delete(m_ptr);
+		cg::Delete(__FUNCSTR__,m_ptr);
 	}
 }
 template<typename T>
@@ -105,8 +105,9 @@ inline typename LinkNode<T>::SelfType *
 LinkNode<T>::InsertNewAfter(SelfType * node,
 	Args && ...args)
 {
-	SelfType* newNode = cg::New<SelfType>();
-	newNode->m_ptr = cg::New<value_type>(std::forward<Args>(args)...);
+	SelfType* newNode = cg::New<SelfType>(__FUNCSTR__);
+	newNode->m_ptr = cg::New<value_type>(__FUNCSTR__,
+		std::forward<Args>(args)...);
 	InsertAfter(node, newNode);
 	return newNode;
 }

@@ -120,6 +120,9 @@ public:
 	void WaitForElements(std::atomic_bool& extBool);
 	/**Notify the waiter that somehting has happened and should wake up.*/
 	void Notify();
+	/**NotifyAll on the waiter that somehting has happened and should wake up.
+	*/
+	void NotifyAll();
 	/**Try to get reader access to the lock box.
 	\return true of the reader is locked for this thread.*/
 	inline bool TryReader()

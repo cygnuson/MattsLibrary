@@ -97,6 +97,8 @@ private:
 	std::thread** m_dataThreads;
 	/**The amount of active data threads*/
 	int m_activeDataThreads = 0;
+	/**True if the server has been stopped.*/
+	bool m_serverStopped = true;
 };
 
 }

@@ -42,7 +42,7 @@ struct ArrayViewImpl
 	/**Create the array view.
 	\param size The size of the data in elements.*/
 	ArrayViewImpl(std::size_t size)
-		:m_data(cg::NewA<T>(size)), m_size(size)
+		:m_data(cg::NewA<T>(__FUNCSTR__,size)), m_size(size)
 	{
 		m_destroy = true;
 	};
@@ -63,7 +63,7 @@ struct ArrayViewImpl
 	{
 		if (other.m_destroy)
 		{
-			m_data = cg::NewA<char>(other.m_size);
+			m_data = cg::NewA<char>(__FUNCSTR__, other.m_size);
 			m_size = other.m_size;
 			std::memcpy(m_data, other.m_data, m_size);
 			m_destroy = true;
@@ -150,7 +150,7 @@ struct ArrayViewImpl
 	allocated during construction.*/
 	inline void Delete()
 	{
-		cg::DeleteA(m_data);
+		cg::DeleteA(__FUNCSTR__,m_data);
 		m_data = nullptr;
 		m_size = 0;
 	}

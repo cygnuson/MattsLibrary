@@ -3,12 +3,33 @@
 #include <map>
 
 #include "IServerMT.hpp"
+#include "../Serial.hpp"
 #include "../crypto/AESFilter.hpp"
 #include "../crypto/RSAExchange.hpp"
 #include "../crypto/RSAFilter.hpp"
 
+#define _DEBUGISECSERVERMT _DEBUG && 1
+
 namespace cg {
 namespace net {
+
+/**A pair of socket pointer and SocketRW.  Both pointers need to be delted by
+the developer.*/
+struct SocketPair
+{
+	/**A pointer to a socket that was created.*/
+	cg::net::Socket* m_socket = nullptr;
+	/**A pointer to a SocketRW that is istup properly to send data to a
+	ISecSocketMT server.*/
+	cg::net::SocketRW* m_rw = nullptr;
+	/**Qucik delete this pair.*/
+	void Delete() {
+		if (m_socket)
+			cg::Delete(__FUNCSTR__,m_socket);
+		if (m_rw)
+			cg::Delete(__FUNCSTR__,m_rw);
+	}
+};
 
 class ClientDescriptor
 {
@@ -27,8 +48,6 @@ public key and then an AES key.*/
 class ISecServerMT : public IServerMT
 {
 public:
-
-public:
 	/**Do something after a socket is excepted.  Will run after the security
 	protocols have run on top of the IServerMT.
 	\param sock The socket that was excepted.*/
@@ -45,9 +64,13 @@ public:
 		bool grace) = 0;
 	/**Get a socket RW that is setup with the proper keys for the client in
 	order to receive data from it.
-	\return A SocketRW that will be able to receive encrypted data from the 
+	\return A SocketRW that will be able to receive encrypted data from the
 	client.*/
 	cg::net::SocketRW GetSocketRW(cg::net::Socket& sock);
+	/**Get a connected socket and writer.
+	\return A socket pointer and SocketRW setup to send and receive data from
+	this server.*/
+	static SocketPair GetConnected(const std::string& address, uint16_t port);
 private:
 	/**The type of map used for the client descriptor.*/
 	using CDMap = std::map<std::size_t, ClientDescriptor>;
@@ -69,7 +92,7 @@ private:
 	/**Get a socket from the client decriptor list.
 	\param sock The socket for which the id will be retreived.
 	\return The client descriptor matching the socket.*/
-	const cg::net::ClientDescriptor& 
+	const cg::net::ClientDescriptor&
 		GetClientDescriptor(const cg::net::Socket& sock);
 
 	/**A list of client descriptors.*/

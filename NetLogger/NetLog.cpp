@@ -24,7 +24,7 @@ void NetLog::Init(const std::string & name,
 {
 	ms_port = port;
 	ms_name = name;
-	ms_client = cg::New<cg::net::Socket>();
+	ms_client = cg::New<cg::net::Socket>(__FUNCSTR__);
 	bool connected = false;
 	try {
 		connected = ms_client->Connect("::1", ms_port);
