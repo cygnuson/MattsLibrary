@@ -69,27 +69,19 @@ public:/**This type.*/
 	bool empty() const {
 		return Empty();
 	}
-	/**Get a begining iterator.
-	\return The Begin iterator.*/
-	Iterator Begin();
+	/**Remove a value from the list.
+	\param it The iterator whos value will be removed.*/
+	template<typename It>
+	void Remove(const It& it);
 	/**Get a begining iterator.
 	\return The Begin iterator.*/
 	ConstIterator Begin()const;
 	/**Get a begining reverse iterator.
 	\return The Begin iterator.*/
-	ReverseIterator RBegin();
-	/**Get a begining reverse iterator.
-	\return The Begin iterator.*/
 	ConstReverseIterator RBegin()const;
 	/**Get a end iterator.
 	\return The end iterator.*/
-	Iterator End();
-	/**Get a end iterator.
-	\return The end iterator.*/
 	ConstIterator End() const;
-	/**Get a end reverse iterator.
-	\return The end iterator.*/
-	ReverseIterator REnd();
 	/**Get a end reverse iterator.
 	\return The end iterator.*/
 	ConstReverseIterator REnd()const;
@@ -144,6 +136,13 @@ Emplace(Args && ...args)
 	++m_size;
 }
 
+template<typename T,
+	template <typename, typename, bool, bool> typename IteratorType>
+template<typename It>
+inline void TreeListImpl<T,IteratorType>::Remove(const It & it)
+{
+	m_rootNode = BinaryTreeNode<value_type>::Remove(&m_rootNode, it.m_node);
+}
 
 template<typename T,
 	template <typename, typename, bool, bool> typename IteratorType>
@@ -179,17 +178,6 @@ inline bool TreeListImpl<T, IteratorType>::Empty() const
 
 template<typename T,
 	template <typename, typename, bool, bool> typename IteratorType>
-inline typename TreeListImpl<T, IteratorType>::Iterator
-TreeListImpl<T, IteratorType>::Begin()
-{
-	auto begin = BinaryTreeNode<T>::BeforeBegin(m_rootNode);
-	Iterator ret(begin, &m_rootNode);
-	++ret;
-	return ret;
-}
-
-template<typename T,
-	template <typename, typename, bool, bool> typename IteratorType>
 inline typename TreeListImpl<T, IteratorType>::ConstIterator
 TreeListImpl<T, IteratorType>::Begin() const
 {
@@ -199,16 +187,6 @@ TreeListImpl<T, IteratorType>::Begin() const
 	return ret;
 }
 
-template<typename T,
-	template <typename, typename, bool, bool> typename IteratorType>
-inline typename TreeListImpl<T, IteratorType>::ReverseIterator
-TreeListImpl<T, IteratorType>::RBegin()
-{
-	auto end = BinaryTreeNode<T>::AfterEnd(m_rootNode);
-	ReverseIterator ret(end, &m_rootNode);
-	--ret;
-	return ret;
-}
 
 template<typename T,
 	template <typename, typename, bool, bool> typename IteratorType>
@@ -223,16 +201,6 @@ TreeListImpl<T, IteratorType>::RBegin() const
 
 template<typename T,
 	template <typename, typename, bool, bool> typename IteratorType>
-inline typename TreeListImpl<T, IteratorType>::Iterator
-TreeListImpl<T, IteratorType>::End()
-{
-	auto end = BinaryTreeNode<T>::AfterEnd(m_rootNode);
-	Iterator ret(end, &m_rootNode);
-	return ret;
-}
-
-template<typename T,
-	template <typename, typename, bool, bool> typename IteratorType>
 inline typename TreeListImpl<T, IteratorType>::ConstIterator
 TreeListImpl<T, IteratorType>::End() const
 {
@@ -240,17 +208,6 @@ TreeListImpl<T, IteratorType>::End() const
 	ConstIterator ret(end, &m_rootNode);
 	return ret;
 }
-
-template<typename T,
-	template <typename, typename, bool, bool> typename IteratorType>
-inline typename TreeListImpl<T, IteratorType>::ReverseIterator
-TreeListImpl<T,IteratorType>::REnd()
-{
-	auto begin = BinaryTreeNode<T>::BeforeBegin(m_rootNode);
-	ReverseIterator ret(begin, &m_rootNode);
-	return ret;
-}
-
 template<typename T,
 	template <typename, typename, bool, bool> typename IteratorType>
 inline typename TreeListImpl<T, IteratorType>::ConstReverseIterator

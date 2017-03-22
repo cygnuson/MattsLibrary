@@ -87,6 +87,9 @@ public:
 		return !(*this == rhs);
 	}
 private:
+	template<typename T,
+		template <typename, typename, bool, bool> typename IteratorType>
+	friend class TreeListImpl;
 	/**A pointer to the node for this iterator.*/
 	NodeType* m_node;
 	/**A pointer to a root node pointer for searching.*/

@@ -394,7 +394,7 @@ BinaryTreeNode<T>::Remove(SelfType ** nodep, SelfType * vic)
 	if (vR2)
 		Insert(nodep, vR2);
 
-	return nullptr;
+	return *nodep;
 }
 
 template<typename T>
