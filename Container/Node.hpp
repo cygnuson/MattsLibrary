@@ -2,6 +2,7 @@
 
 #include "../Logger.hpp"
 #include "../Hash.hpp"
+#include "../Memory.hpp"
 
 namespace cg {
 

@@ -9,7 +9,8 @@
 namespace cg {
 
 
-/**
+/** This node will clean up its data when it destroyes.  It will own any
+pointers sent to it.
 \tparam T A type that is valid for use with operator<*/
 template<typename T>
 class BinaryTreeNode : public cg::Node<T>
@@ -46,11 +47,12 @@ public:
 	/**The self-type of the tree.*/
 	using SelfType = self_type;
 	/**Empty ctor.*/
-	BinaryTreeNode() :m_ptr(nullptr) {
-	};
+	BinaryTreeNode() :m_ptr(nullptr) {};
 	/**Create a node.
 	\param ptr A pointer to the data.*/
 	BinaryTreeNode(Pointer ptr);
+	/**deleting dtor.*/
+	~BinaryTreeNode();
 	/**A function that will determine the size of a branch.  A single node with
 	no nodes conencted to it is of size 1.
 	\param node The node.
@@ -77,7 +79,7 @@ public:
 	operator< defined for it.
 	\param node A poitner to a node pointer. If `node` is not set (is null) it
 	will become the new node.
-	\param node the node that will be tied.
+	\param other the node that will be tied.
 	\return True if `other` was attached a node.*/
 	static bool Insert(SelfType** node, SelfType* other);
 	/**Remove a node from a tree. The node is removed, but NOT deleted or
@@ -132,7 +134,7 @@ public:
 	/**Get a BeforeBegin node.
 	\param root The root node that this beforBegin node will lead to.
 	\return A node specially configured for beforeBegin.*/
-	static SelfType BeforeBegin(SelfType* root);
+	static SelfType* BeforeBegin(SelfType* root);
 	/**Determine if a node is a before begin node.
 	\param node The node to check.
 	\return True if the node is a beforeBegin node.*/
@@ -144,7 +146,7 @@ public:
 	/**Get a special after end node.
 	\param root The root node that this after end node will lead to.
 	\return An node that signifies after end.*/
-	static SelfType AfterEnd(SelfType* node);
+	static SelfType* AfterEnd(SelfType* node);
 	/**Pointer member access.
 	\return A pointer to the node.*/
 	Pointer operator->();
@@ -166,19 +168,22 @@ public:
 	/**The right node.*/
 	SelfType* m_right;
 #if _DEBUGBINARYTREENODE
-	static std::size_t md_lastSize;
 	SelfType* md_parent = nullptr;
 	const SelfType* md_self = nullptr;
 #endif
 };
 
-template<typename T>
-std::size_t BinaryTreeNode<T>::md_lastSize = 0;
 
 template<typename T>
 inline BinaryTreeNode<T>::BinaryTreeNode(Pointer ptr)
 	:m_ptr(ptr)
 {
+}
+
+template<typename T>
+inline BinaryTreeNode<T>::~BinaryTreeNode()
+{
+	cg::Delete(m_ptr);
 }
 
 template<typename T>
@@ -523,7 +528,7 @@ inline void BinaryTreeNode<T>::AdvanceNext(SelfType ** node, SelfType * root)
 		value node. Time to set the iterator to be the after end iterator.*/
 		if (!doRight || !(*node)->m_right)
 		{
-			**node = AfterEnd(root);
+			*node = AfterEnd(root);
 			return;
 		}
 		else
@@ -595,7 +600,7 @@ inline void BinaryTreeNode<T>::AdvancePrev(SelfType ** node, SelfType * root)
 		/*if doLeft is false or there is no left node, and we arrived at the 
 		root node its the end of the line.*/
 		if (!doLeft || !(*node)->m_left)
-			**node = BeforeBegin(root);
+			*node = BeforeBegin(root);
 		else
 		{
 			*node = (*node)->m_left;
@@ -650,12 +655,12 @@ inline void BinaryTreeNode<T>::AdvancePrev(SelfType ** node, SelfType * root)
 }
 
 template<typename T>
-inline  typename BinaryTreeNode<T>::SelfType
+inline  typename BinaryTreeNode<T>::SelfType*
 BinaryTreeNode<T>::BeforeBegin(SelfType * root)
 {
-	SelfType ret;
-	ret.m_left = nullptr;
-	ret.m_ptr = nullptr;
+	auto ret = cg::New<SelfType>();
+	ret->m_left = nullptr;
+	ret->m_ptr = nullptr;
 	auto node = root;
 	while (1)
 		/*Set the m_right ptr to the left most node of the root.*/
@@ -666,7 +671,7 @@ BinaryTreeNode<T>::BeforeBegin(SelfType * root)
 		else
 			break;
 	}
-	ret.m_right = node;
+	ret->m_right = node;
 	return ret;
 }
 
@@ -687,12 +692,12 @@ inline bool BinaryTreeNode<T>::IsAfterEnd(SelfType* node)
 }
 
 template<typename T>
-inline  typename BinaryTreeNode<T>::SelfType
+inline  typename BinaryTreeNode<T>::SelfType*
 BinaryTreeNode<T>::AfterEnd(SelfType* root)
 {
-	SelfType ret;
-	ret.m_ptr = nullptr;
-	ret.m_right = nullptr;
+	auto ret = cg::New<SelfType>();
+	ret->m_ptr = nullptr;
+	ret->m_right = nullptr;
 	auto node = root;
 	while (1)
 		/*Set the m_right ptr to the left most node of the root.*/
@@ -703,7 +708,7 @@ BinaryTreeNode<T>::AfterEnd(SelfType* root)
 		else
 			break;
 	}
-	ret.m_left = node;
+	ret->m_left = node;
 	return ret;
 }
 
@@ -739,9 +744,11 @@ inline std::size_t BinaryTreeNode<T>::Hash() const
 	}
 }
 
-
+}
 
 #if _DEBUGBINARYTREENODE
 template class cg::BinaryTreeNode<int>;
 #endif
-}
+
+
+

@@ -28,7 +28,7 @@ public:
 	using const_iterator = ConstIterator;
 	/**The iterator type*/
 	using ReverseIterator= IteratorType
-		<value_type, ArrayNode<value_type>, false, true>;
+		<value_type, ArrayNode<value_type>, false, true>; 
 	/**The iterator type (STD COMPATIBILITY)*/
 	using reverse_iterator = ReverseIterator;
 	/**The const iterator type*/

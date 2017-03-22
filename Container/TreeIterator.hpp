@@ -29,6 +29,11 @@ public:
 	\param root the root node owning this node.*/
 	TreeIterator(NodeType* node, NodeType** root)
 		:m_node(node), m_root(root) {}
+	/**Construct into a chain.
+	\param node The node for this iterator.
+	\param root the root node owning this node.*/
+	TreeIterator(NodeType* node, NodeType*const* root)
+		:m_node(node), m_root(root) {}
 	/**Copy asignment contructor.
 	\param other The other thing to copy.*/
 	TreeIterator(const self_type& other)
@@ -85,10 +90,9 @@ private:
 	/**A pointer to the node for this iterator.*/
 	NodeType* m_node;
 	/**A pointer to a root node pointer for searching.*/
-	NodeType** m_root;
+	NodeType*const* m_root;
 
 };
-
 
 template<typename T, typename NodeTypeT, bool Const, bool Reverse>
 inline typename TreeIterator<T, NodeTypeT, Const, Reverse>::self_type &
