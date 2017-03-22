@@ -1,5 +1,7 @@
 #pragma once
 
+#define _DEBUGMASTERLOCK _DEBUG && 0
+
 namespace cg {
 
 template<typename Mutex, bool Ref>
