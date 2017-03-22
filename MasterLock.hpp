@@ -6,6 +6,8 @@
 #include "LogAdaptor.hpp"
 #include "ScopeLock.hpp"
 
+#define _DEBUGMASTERLOCK _DEBUG && 0
+
 namespace cg {
 
 

@@ -27,7 +27,7 @@ public:
 	seconds, Lessthan ZERO = inf timeout.
 	\return The amount of bytes written.*/
 	virtual std::ptrdiff_t Write(const char* data,
-		std::size_t size,
+		int64_t size,
 		std::ptrdiff_t timeout = 1) = 0;
 	/**Write an array view.
 	\param av The array view.

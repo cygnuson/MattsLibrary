@@ -24,7 +24,7 @@ public:
 	\param expectedSize The max size to get. Might be less
 	\return an ArrayView with data.  An ArrayView with nullptr and 0 size if
 	no bytes are read.*/
-	virtual cg::ArrayView Read(std::size_t expectedSize,
+	virtual cg::ArrayView Read(int64_t expectedSize,
 		std::ptrdiff_t timeout = -1) = 0;
 	/**Read some data. T must have a member .data()  that will return a
 	pointer to a location to store data. T must also have a member .size()const

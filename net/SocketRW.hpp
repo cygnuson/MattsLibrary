@@ -49,7 +49,7 @@ public:
 	\return The amount of bytes written. -1 if the socket is no open, or 0
 	if nothing was sent.*/
 	virtual std::ptrdiff_t Write(const char * data,
-		std::size_t size,
+		int64_t size,
 		std::ptrdiff_t timeout = -1) override;
 	/**Read from the socket. Will determine size automatically.
 	\param timeout time untill return if the data does not get read. If the
@@ -59,7 +59,7 @@ public:
 	\param expectedSize Does not matter for this class.
 	\return an ArrayView with data.  An ArrayView with nullptr and 0 size if
 	no bytes are read, or the socket is not open.*/
-	cg::ArrayView Read(std::size_t expectedSize = 0, 
+	cg::ArrayView Read(int64_t expectedSize = 0,
 		std::ptrdiff_t timeout = -1);
 	/**Set or update the reader filter ascociated with the socketRW.
 	\param filter The filter to be set. The filter object will become the 

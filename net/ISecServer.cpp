@@ -14,13 +14,16 @@ bool cg::net::ISecServerMT::SocketAccepted(cg::net::Socket & sock)
 	cg::net::SocketRW rw(&sock);
 	cg::net::ClientDescriptor& cd = m_secClients[sock.Id()];
 	cg::GetPublicKey(sock, cd.m_rsaPub);
+	cg::Logger::LogWarn(3, __FUNCSTR__, "Got the public key.");
 	rw.SetWriterFilter(new RSAEncryptFilter(cd.m_rsaPub));
 	cd.m_aesKey = cg::SecureHelpers::MakeAESKey();
 	cd.m_aesIv = cg::SecureHelpers::MakeAESIv();
 	auto& aesKey = cd.m_aesKey;
 	auto& aesIv = cd.m_aesIv;
 	rw.Write((char*)aesKey.data(), aesKey.size());
+	cg::Logger::LogWarn(3, __FUNCSTR__, "sent the aes key.");
 	rw.Write((char*)aesIv.data(), aesIv.size());
+	cg::Logger::LogWarn(3, __FUNCSTR__, "sent the aes iv.");
 	return SecSocketAccepted(sock);
 }
 

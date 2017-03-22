@@ -37,7 +37,9 @@ inline void cg::BasicLock<Mutex, Ref>::Lock()
 	}
 	else
 	{
+#if _DEBUGMASTERLOCK
 		LogNote(1, __FUNCSTR__, "TryLock Fail, will block.");
+#endif
 	}
 	m_lock.lock();
 }
@@ -115,7 +117,9 @@ inline void SharedLock<Mutex, Ref>::SLock()
 	}
 	else
 	{
+#if _DEBUGMASTERLOCK
 		LogNote(1, __FUNCSTR__, "TryLock Fail, will block.");
+#endif
 	}
 	m_lock.lock_shared();
 }

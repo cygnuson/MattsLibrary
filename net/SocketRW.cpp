@@ -35,7 +35,7 @@ SocketRW::SocketRW(const Socket * sock)
 	EnableLogs(true, "SocketRW");
 }
 std::ptrdiff_t SocketRW::Write(const char * data,
-	std::size_t size,
+	int64_t size,
 	std::ptrdiff_t timeout)
 {
 	CheckAndReport();
@@ -43,20 +43,32 @@ std::ptrdiff_t SocketRW::Write(const char * data,
 		return 0;
 
 	auto sLock = m_socket->ScopeLock();
-	auto sSize = uint64_t(size);
-	/*prepend the size of the data.*/
-	m_socket->Send((char*)&sSize, sizeof(uint64_t), true);
 	if (!m_writeFilter)
-		return m_socket->Send(data, size, true);
+	{
+		auto sSize = uint64_t(size);
+		/*prepend the size of the data.*/
+		m_socket->Send((char*)&sSize, sizeof(uint64_t), true);
+		if (!m_writeFilter)
+			return m_socket->Send(data, size, true);
+		else
+		{
+			auto tData =
+				m_writeFilter->TransformCopy(data, size);
+
+			return m_socket->Send(tData.data(), tData.size(), true);
+		}
+	}
 	else
 	{
 		auto tData =
 			m_writeFilter->TransformCopy(data, size);
-
+		int64_t sSize = tData.size();
+		/*prepend the size of the data.*/
+		m_socket->Send((char*)&sSize, sizeof(uint64_t), true);
 		return m_socket->Send(tData.data(), tData.size(), true);
 	}
 }
-cg::ArrayView SocketRW::Read(std::size_t expectedSize,
+cg::ArrayView SocketRW::Read(int64_t expectedSize,
 	std::ptrdiff_t timeout)
 {
 	CheckAndReport();
