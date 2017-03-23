@@ -29,5 +29,17 @@ T GCD(const T& first, const T& second)
 	return 1;
 }
 
+/**Get the least common multiple of a pair of numbers.
+\param first The first number.
+\param second The second number.
+\return The number that is the least common multiple.*/
+template<typename T>
+T LCM(const T& first, const T& second)
+{
+	auto div = cg::math::GCD<T>(first, second);
+	return (first / div) * second;
+}
+
+
 }
 }
