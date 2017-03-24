@@ -106,6 +106,11 @@ public:
 	\param other The other thing to compare to.
 	\return True if this object is not equal to `other`.*/
 	bool operator!=(SelfType other);
+	/**Convert to the FloatType by performing the division.
+	\return The number as a FloatType.*/
+	operator FloatType() {
+		return FloatType(m_numerator) / FloatType(m_denominator);
+	}
 private:
 	using cg::LogAdaptor<Rational<DataType>>::EnableLogs;
 	using cg::LogAdaptor<Rational<DataType>>::LogNote;
