@@ -6,8 +6,9 @@
 #include <vector>
 
 #include "OSInclude.hpp"
-#include "Logger.hpp"
+#include "LogAdaptor.hpp"
 #include "exception.hpp"
+#include "ArrayView.hpp"
 
 #if defined(_WIN32)
 #define StatFunction _stat64
@@ -122,27 +123,16 @@ private:
 	Error m_e;
 };
 
-
-
-/**A directory object. Options to create the directory if it does not exist.*/
-class Dir
+/**Static global options for file systems.*/
+class FileSystem
 {
 public:
-	/**Create the file without checking if it exists or trying to create it.
-	\param filename The name of the file and its directory.*/
-	Dir(const std::string& path = "");
-	/**Copy a directory from another.
-	\param other The other dir to copy.*/
-	Dir(const Dir& other);
-	/**Move a directory from another.
-	\param other The other dir to move.*/
-	Dir(Dir&& other);
-	/**Copy a directory from another.
-	\param other The other dir to copy.*/
-	void operator=(const Dir& other);
-	/**Move a directory from another.
-	\param other The other dir to move.*/
-	void operator=(Dir&& other);
+	/**Change the option of automatically creating directories and files.
+	\param opt True to have all directories and files created if they can be.*/
+	static void AutoCreate(bool opt);
+	/**Determine if the file system should auto creat files and directories.
+	\return True if files should be created automatically.*/
+	static bool AutoCreate();
 	/**Create a directory.
 	\param dir The directory to create.
 	\param mode Any arguments that may be used for creation. This is primarily for
@@ -174,6 +164,30 @@ public:
 	\param name The name of the file.
 	\return True if the file is not a directory.*/
 	static bool IsFile(const std::string& file);
+private:
+	/**The option for creating files auto.*/
+	static bool ms_autoCreate;
+};
+
+/**A directory object. Options to create the directory if it does not exist.*/
+class Dir : public cg::LogAdaptor<Dir>
+{
+public:
+	/**Create the file without checking if it exists or trying to create it.
+	\param filename The name of the file and its directory.*/
+	Dir(const std::string& path = "");
+	/**Copy a directory from another.
+	\param other The other dir to copy.*/
+	Dir(const Dir& other);
+	/**Move a directory from another.
+	\param other The other dir to move.*/
+	Dir(Dir&& other);
+	/**Copy a directory from another.
+	\param other The other dir to copy.*/
+	void operator=(const Dir& other);
+	/**Move a directory from another.
+	\param other The other dir to move.*/
+	void operator=(Dir&& other);
 	/*Add another directory to the end of this one.
 	\param newDir The the dir(s) to add to this one.
 	\return A ref to this object.*/
@@ -205,11 +219,18 @@ public:
 	/**Creat the directory structure associated with this dir.
 	\return True if the structure was created and a file can now be make in the
 	directory. False otherwise.*/
-	bool Create() const;
+	bool Touch() const;
 	/**Get the string for this dir.
 	\return The string to that is the path.*/
 	std::string ToString() const;
 private:
+	using cg::LogAdaptor<Dir>::EnableLogs;
+	using cg::LogAdaptor<Dir>::LogNote;
+	using cg::LogAdaptor<Dir>::LogWarn;
+	using cg::LogAdaptor<Dir>::LogError;
+	using cg::LogAdaptor<Dir>::Log;
+	using cg::LogAdaptor<Dir>::ms_log;
+	using cg::LogAdaptor<Dir>::ms_name;
 	/**Make sure that the structure is valid.
 	\return True if the directory structure is valid or is created and valid.*/
 	bool CreateStructure() const;
@@ -221,7 +242,7 @@ private:
 };
 
 /**A file object containing a cg::Dir path and file name.*/
-class File
+class File : public cg::LogAdaptor<File>
 {
 public:
 	/**Create the file.
@@ -238,7 +259,55 @@ public:
 	/**Delete this file only. The directory will not be removed.
 	\return True if the file was removed.*/
 	bool Remove() const;
+	/**Write to this file.
+	\param pos The position to write. Use 0 to write at the begining of the 
+	file.  The internal stream position will automatically advance to the new
+	position pos+size. If pos = -1, than the data will write where ever the
+	stream is currently at.
+	\param data The data to write.
+	\param size The amount of data to write.
+	\return True if data was written.*/
+	bool Write(const char* data, std::size_t size, std::ptrdiff_t pos = -1);
+	/**Write to this file.
+	\param pos The position to write. Use 0 to write at the begining of the
+	file.  The internal stream position will automatically advance to the new
+	position pos+size. If pos = -1, than the data will write where ever the
+	stream is currently at.
+	\param data An array view with data to write.
+	\return True if data was written.*/
+	bool Write(const cg::ArrayView& data, std::ptrdiff_t pos = -1);
+	/**Read from the file.
+	\param pos The position to read from.
+	\param data The place to put the data.
+	\param size The amount of data to read.
+	\return True if data was read, False if there was an issue.*/
+	bool Read(char* data, std::size_t size, std::ptrdiff_t pos = -1);
+	/**Read from the file.
+	\param pos The position to read from.
+	\param data An array view that is initialized to a size that will be the 
+	size of the data to read.
+	\return True if data was read, False if there was an issue.*/
+	bool Read(cg::ArrayView& data, std::ptrdiff_t pos = -1);
+	/**Get the full path of the file and its directories.
+	\return A string with the full path of the file.*/
+	std::string FullPath() const;
+	/**Get a string with the path.
+	\return A string with just the file name.*/
+	std::string ToString() const;
+	/**Get the extention of the file.
+	\return A string with just the extension of the file.  If the file has no
+	extension, then a blank string will be returned.*/
+	std::string Ext() const;
 private:
+	using cg::LogAdaptor<File>::EnableLogs;
+	using cg::LogAdaptor<File>::LogNote;
+	using cg::LogAdaptor<File>::LogWarn;
+	using cg::LogAdaptor<File>::LogError;
+	using cg::LogAdaptor<File>::Log;
+	using cg::LogAdaptor<File>::ms_log;
+	using cg::LogAdaptor<File>::ms_name;
+	/**an  for writing or reading.*/
+	std::fstream m_stream;
 	/**The directory for which the file will exist.*/
 	cg::Dir m_dir;
 	/**The name of the file.*/
