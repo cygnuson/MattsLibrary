@@ -5,7 +5,22 @@
 namespace cg {
 
 const std::uintmax_t MaxPowerOf2 = ((sizeof(std::uintmax_t) * 8) - 1);
- 
+
+/**Runtime power*/
+inline std::intmax_t RTPower(std::intmax_t num,
+	std::uintmax_t pow)
+{
+	if (pow == 0)
+		return 1;
+	auto oNum = num;
+	while (pow > 1)
+	{
+		num *= oNum;
+		--pow;
+	}
+	return num;
+}
+
 /**Compiletime power operator.
 *
 *Get the power at compile time.

@@ -56,6 +56,10 @@ public:
 	\param other The other number to be used in the operation.
 	\return This object after the operation.*/
 	SelfType& operator/=(const SelfType& other);
+	/**Devide this number by another one.
+	\param other The other number to be used in the operation.
+	\return This object after the operation.*/
+	SelfType& operator%=(SelfType other);
 	/**Math operator
 	\param other The other thing in the op.
 	\return A copy with the result.*/
@@ -72,6 +76,10 @@ public:
 	\param other The other thing in the op.
 	\return A copy with the result.*/
 	SelfType operator/(const SelfType& other);
+	/**Math operator
+	\param other The other thing in the op.
+	\return A copy with the result.*/
+	SelfType operator%(const SelfType& other);
 	/*Get the logarithm of the number.
 	\param base The base for the log operation (default 2).
 	\return The largest floating point type that is the log_b of this object.
@@ -249,6 +257,16 @@ Rational<DataType>::operator/=(const SelfType & other)
 }
 
 template<typename DataType>
+inline typename Rational<DataType>::SelfType &
+Rational<DataType>::operator%=(SelfType other)
+{
+	Equalize(*this, other);
+	m_numerator %= other.m_numerator;
+	Simplify();
+	return *this;
+}
+
+template<typename DataType>
 inline typename Rational<DataType>::SelfType
 Rational<DataType>::operator+(const SelfType & other)
 {
@@ -278,6 +296,14 @@ Rational<DataType>::operator/(const SelfType & other)
 {
 	auto copy = *this;
 	return copy /= other;
+}
+
+template<typename DataType>
+inline typename Rational<DataType>::SelfType
+Rational<DataType>::operator%(const SelfType & other)
+{
+	auto copy = *this;
+	return copy %= other;
 }
 
 template<typename DataType>
