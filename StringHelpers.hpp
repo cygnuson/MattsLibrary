@@ -203,12 +203,6 @@ std::string ToString(const Array<T, Size>& o)
 	}
 	return ss.str();
 }
-/*****************************************************For std::shared_pointer*/
-template<template<typename> class Ptr, typename T>
-std::string ToString(const Ptr<T>& o)
-{
-	return ToString(*o);
-}
 
 /*seconds*/
 inline std::string ToString(std::chrono::duration<double> time)

@@ -5,8 +5,27 @@
 namespace cg {
 namespace math {
 
+/**The types of units.*/
+enum Unit
+{
+	/**A scalat type with no unit.*/
+	Scalar = 0,
+	/**The unit for distance.*/
+	Meter,
+	/**The unit for mass.*/
+	Gram,
+	/**The unit for time.*/
+	Second,
+	/**The unit for current.*/
+	Ampere,
+	/**The unit for temprature*/
+	Kelvin,
+	/**The unit for amount of substance*/
+	Mole,
+};
+
 /**The types of prefix.*/
-enum MetricPrefix : int8_t
+enum Prefix : int8_t
 {
 	Yocto = -24,
 	Zepto = -21,
@@ -34,7 +53,7 @@ enum MetricPrefix : int8_t
 /**Convert a prefix into a name.
 \param pref The prefi.
 return A string that is the name of the prefix.*/
-inline std::string ToString(MetricPrefix pref)
+inline std::string ToString(Prefix pref)
 {
 	switch (pref)
 	{
@@ -84,24 +103,29 @@ inline std::string ToString(MetricPrefix pref)
 }
 /**Convert a regular number to another prefix.*/
 template<typename NumType>
-inline NumType PrefixCast(MetricPrefix fromPref,
-	MetricPrefix toPref,
+inline NumType PrefixCast(Prefix fromPref,
+	Prefix toPref,
 	NumType num)
 {
 	if (fromPref == toPref)
 		return num;
 
-	auto factor_prefix = (MetricPrefix)(toPref - fromPref);
+	int factor_prefix = (int)(toPref - fromPref);
 	bool factorUp = factor_prefix < 0;
 	uintmax_t factor;
-	if (factorUp)
-		factor = cg::math::RTPower(10, -factor_prefix);
-	else
-		factor = cg::math::RTPower(10, factor_prefix);
-	if (factorUp)
-		num *= (NumType)factor;
-	else
-		num /= (NumType)factor;
+	while (factor_prefix != 0)
+	{
+		if (factor_prefix < 0)
+		{
+			num /= 10;
+			++factor_prefix;
+		}
+		else
+		{
+			num *= 10;
+			--factor_prefix;
+		}
+	}
 	return num;
 }
 

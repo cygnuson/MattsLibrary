@@ -7,8 +7,8 @@ namespace cg {
 const std::uintmax_t MaxPowerOf2 = ((sizeof(std::uintmax_t) * 8) - 1);
 
 /**Runtime power*/
-inline std::intmax_t RTPower(std::intmax_t num,
-	std::uintmax_t pow)
+template<typename NumType>
+inline NumType RTPower(NumType num,NumType pow)
 {
 	if (pow == 0)
 		return 1;

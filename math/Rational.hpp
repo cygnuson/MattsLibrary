@@ -9,7 +9,8 @@ namespace cg {
 namespace math {
 
 template<typename DataType>
-class Rational : public cg::LogAdaptor<Rational<DataType>>
+class Rational : public cg::LogAdaptor<Rational<DataType>> , 
+	public cg::Stringable
 {
 public:
 	/**The type of floating point to use.*/
@@ -40,6 +41,20 @@ public:
 	\param lhs The first thing to equalize.
 	\param rhs The second thing to equalize.*/
 	static void Equalize(SelfType& lhs, SelfType& rhs);
+	/**Increment the poitner by 1. (prefix)
+	\return This same type.*/
+	inline SelfType& operator++();
+	/**Increment this by 1. (postfix)
+	\param nothing Ignored pointer.
+	\return a copy of this befor incrementing.*/
+	inline SelfType operator++(int nothing);
+	/**Decrement the poitner by 1. (prefix)
+	\return This same type after incrementing.*/
+	inline SelfType& operator--();
+	/**Decrement this by 1. (postfix)
+	\param nothing Ignored pointer.
+	\return a copy of this before decrementing.*/
+	inline SelfType operator--(int nothing);
 	/**Do some math.
 	\param other The other thing to add to this.
 	\return This object after the operation.*/
@@ -63,23 +78,27 @@ public:
 	/**Math operator
 	\param other The other thing in the op.
 	\return A copy with the result.*/
-	SelfType operator+(const SelfType& other);
+	SelfType operator+(const SelfType& other)const;
 	/**Math operator
 	\param other The other thing in the op.
 	\return A copy with the result.*/
-	SelfType operator-(const SelfType& other);
+	SelfType operator-(const SelfType& other)const;
 	/**Math operator
 	\param other The other thing in the op.
 	\return A copy with the result.*/
-	SelfType operator*(const SelfType& other);
+	SelfType operator*(const SelfType& other)const;
 	/**Math operator
 	\param other The other thing in the op.
 	\return A copy with the result.*/
-	SelfType operator/(const SelfType& other);
+	SelfType operator/(const SelfType& other)const;
 	/**Math operator
 	\param other The other thing in the op.
 	\return A copy with the result.*/
-	SelfType operator%(const SelfType& other);
+	SelfType operator%(const SelfType& other)const;
+	/**Math operator
+	\param other The other thing in the op.
+	\return A copy with the result.*/
+	SelfType operator%(const DataType& other)const;
 	/*Get the logarithm of the number.
 	\param base The base for the log operation (default 2).
 	\return The largest floating point type that is the log_b of this object.
@@ -93,32 +112,40 @@ public:
 	/**Do some comparing.
 	\param other The other thing to compare to.
 	\return True if this object is less than `other`.*/
-	bool operator<(SelfType other);
+	bool operator<(SelfType other)const;
 	/**Do some comparing.
 	\param other The other thing to compare to.
 	\return True if this object is greater than `other`.*/
-	bool operator>(SelfType other);
+	bool operator>(SelfType other)const;
 	/**Do some comparing.
 	\param other The other thing to compare to.
 	\return True if this object is greater than or equal to `other`.*/
-	bool operator>=(SelfType other);
+	bool operator>=(SelfType other)const;
 	/**Do some comparing.
 	\param other The other thing to compare to.
 	\return True if this object is less than or equal to `other`.*/
-	bool operator<=(SelfType other);
+	bool operator<=(SelfType other)const;
 	/**Do some comparing.
 	\param other The other thing to compare to.
 	\return True if this object is equal to `other`.*/
-	bool operator==(SelfType other);
+	bool operator==(SelfType other)const;
 	/**Do some comparing.
 	\param other The other thing to compare to.
 	\return True if this object is not equal to `other`.*/
-	bool operator!=(SelfType other);
+	bool operator!=(SelfType other) const;
 	/**Convert to the FloatType by performing the division.
 	\return The number as a FloatType.*/
 	operator FloatType() {
 		return FloatType(m_numerator) / FloatType(m_denominator);
 	}
+	/**A unit of DataType that will be the numerator*/
+	DataType m_numerator;
+	/**A unit of DataType that will be the denominator.*/
+	DataType m_denominator;
+	/**Cause the rational to simplify.*/
+	void Simplify();
+	/**Make this object into its reciprical.*/
+	void MakeReciprocal();
 private:
 	using cg::LogAdaptor<Rational<DataType>>::EnableLogs;
 	using cg::LogAdaptor<Rational<DataType>>::LogNote;
@@ -127,18 +154,10 @@ private:
 	using cg::LogAdaptor<Rational<DataType>>::Log;
 	using cg::LogAdaptor<Rational<DataType>>::ms_log;
 	using cg::LogAdaptor<Rational<DataType>>::ms_name;
-	/**Make this object into its reciprical.*/
-	void MakeReciprocal();
-	/**Cause the rational to simplify.*/
-	void Simplify();
 	/**Set a numerator and denominator.
 	\param numerator The top of the rational unit.
 	\param denominator The bottom of the rational unit.*/
 	void Init(const DataType& numerator, const DataType& denominator);
-	/**A unit of DataType that will be the numerator*/
-	DataType m_numerator;
-	/**A unit of DataType that will be the denominator.*/
-	DataType m_denominator;
 };
 
 template<typename DataType>
@@ -185,6 +204,40 @@ inline void Rational<DataType>::Equalize(SelfType & lhs, SelfType & rhs)
 	rhs.m_denominator = LCM;
 	lhs.m_numerator *= lhsFactor;
 	rhs.m_numerator *= rhsFactor;
+}
+
+template<typename DataType>
+inline typename Rational<DataType>::SelfType &
+Rational<DataType>::operator++()
+{
+	m_numerator += m_denominator;
+	return *this;
+}
+
+template<typename DataType>
+inline typename Rational<DataType>::SelfType
+Rational<DataType>::operator++(int nothing)
+{
+	auto copy = *this;
+	m_numerator += m_denominator;
+	return copy;
+}
+
+template<typename DataType>
+inline typename Rational<DataType>::SelfType &
+Rational<DataType>::operator--()
+{
+	m_numerator -= m_denominator;
+	return *this;
+}
+
+template<typename DataType>
+inline typename Rational<DataType>::SelfType
+Rational<DataType>::operator--(int nothing)
+{
+	auto copy = *this;
+	m_numerator -= m_denominator;
+	return copy;
 }
 
 template<typename DataType>
@@ -268,7 +321,7 @@ Rational<DataType>::operator%=(SelfType other)
 
 template<typename DataType>
 inline typename Rational<DataType>::SelfType
-Rational<DataType>::operator+(const SelfType & other)
+Rational<DataType>::operator+(const SelfType & other)const
 {
 	auto copy = *this;
 	return copy += other;
@@ -276,7 +329,7 @@ Rational<DataType>::operator+(const SelfType & other)
 
 template<typename DataType>
 inline typename Rational<DataType>::SelfType
-Rational<DataType>::operator-(const SelfType & other)
+Rational<DataType>::operator-(const SelfType & other)const
 {
 	auto copy = *this;
 	return copy -= other;
@@ -284,7 +337,7 @@ Rational<DataType>::operator-(const SelfType & other)
 
 template<typename DataType>
 inline typename Rational<DataType>::SelfType
-Rational<DataType>::operator*(const SelfType & other)
+Rational<DataType>::operator*(const SelfType & other)const
 {
 	auto copy = *this;
 	return copy *= other;
@@ -292,7 +345,7 @@ Rational<DataType>::operator*(const SelfType & other)
 
 template<typename DataType>
 inline typename Rational<DataType>::SelfType
-Rational<DataType>::operator/(const SelfType & other)
+Rational<DataType>::operator/(const SelfType & other)const
 {
 	auto copy = *this;
 	return copy /= other;
@@ -300,10 +353,17 @@ Rational<DataType>::operator/(const SelfType & other)
 
 template<typename DataType>
 inline typename Rational<DataType>::SelfType
-Rational<DataType>::operator%(const SelfType & other)
+Rational<DataType>::operator%(const SelfType & other)const
 {
 	auto copy = *this;
 	return copy %= other;
+}
+
+template<typename DataType>
+inline typename Rational<DataType>::SelfType
+Rational<DataType>::operator%(const DataType & other) const
+{
+	return *this % SelfType(other);
 }
 
 template<typename DataType>
@@ -331,52 +391,56 @@ Rational<DataType>::Ln()
 }
 
 template<typename DataType>
-inline bool Rational<DataType>::operator<(SelfType other)
+inline bool Rational<DataType>::operator<(SelfType other)const
 {
-	Equalize(*this, other);
-	return this->m_numerator < other.m_numerator;
+	auto copy = *this;
+	Equalize(copy, other);
+	return copy.m_numerator < other.m_numerator;
 }
 
 template<typename DataType>
-inline bool Rational<DataType>::operator>(SelfType other)
+inline bool Rational<DataType>::operator>(SelfType other)const
 {
 	return !(*this <= other);
 }
 
 template<typename DataType>
-inline bool Rational<DataType>::operator>=(SelfType other)
+inline bool Rational<DataType>::operator>=(SelfType other)const
 {
-	Equalize(*this, other);
-	auto eq = this->m_numerator == other.m_numerator;
-	auto eq2 = this->m_numerator > other.m_numerator;
-	Simplify();
+	auto copy = *this;
+	Equalize(copy, other);
+	auto eq = copy.m_numerator == other.m_numerator;
+	auto eq2 = copy.m_numerator > other.m_numerator;
+	copy.Simplify();
 	other.Simplify();
 	return eq || eq2;
 }
 
 template<typename DataType>
-inline bool Rational<DataType>::operator<=(SelfType other)
+inline bool Rational<DataType>::operator<=(SelfType other)const
 {
-	Equalize(*this, other);
-	auto eq = this->m_numerator == other.m_numerator;
-	auto eq2 = this->m_numerator < other.m_numerator;
-	Simplify();
+	auto copy = *this;
+	Equalize(copy, other);
+	auto eq = copy.m_numerator == other.m_numerator;
+	auto eq2 = copy.m_numerator < other.m_numerator;
+	copy.Simplify();
 	other.Simplify();
 	return eq || eq2;
 }
 
 template<typename DataType>
-inline bool Rational<DataType>::operator==(SelfType other)
+inline bool Rational<DataType>::operator==(SelfType other)const
 {
-	Equalize(*this, other);
-	auto eq = this->m_numerator == other.m_numerator;
-	Simplify();
+	auto copy = *this;
+	Equalize(copy, other);
+	auto eq = copy.m_numerator == other.m_numerator;
+	copy.Simplify();
 	other.Simplify();
 	return eq;
 }
 
 template<typename DataType>
-inline bool Rational<DataType>::operator!=(SelfType other)
+inline bool Rational<DataType>::operator!=(SelfType other)const
 {
 	return !(*this == other);
 }
@@ -410,7 +474,7 @@ inline void Rational<DataType>::Simplify()
 		}
 		DataType wholeUnits = m_numerator / m_denominator;
 		m_numerator %= m_denominator;
-		auto GCD = cg::math::GCD(m_numerator, m_denominator);
+		auto GCD = cg::math::GCD<DataType>(m_numerator, m_denominator);
 		m_numerator /= GCD;
 		m_denominator /= GCD;
 		m_numerator += wholeUnits * m_denominator;
