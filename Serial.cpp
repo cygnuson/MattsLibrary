@@ -57,7 +57,6 @@ std::size_t Serial::Read(cg::Reader & reader,
 
 void Serial::Push(const std::string & str)
 {
-	Reset();
 	m_data.insert(m_data.end(), str.begin(), str.end());
 	/*make sure to add the zero*/
 	m_data.push_back(0);
@@ -77,6 +76,68 @@ std::pair<const char*, std::size_t> Serial::Get() const
 cg::ArrayView Serial::GetArrayView() const
 {
 	return cg::ArrayView::Copy(m_data.data(), m_data.size());
+}
+std::size_t Serial::Size() const
+{
+	return m_data.size()-1;
+}
+std::size_t Serial::Position() const
+{
+	return m_pos-1;
+}
+std::size_t Serial::Left() const
+{
+	return Size() - Position();
+}
+/*****************************************************************************/
+
+
+SerialWriter::SerialWriter(Serial & serial)
+	:m_serial(serial)
+{
+
+}
+bool SerialWriter::WriteReady(std::ptrdiff_t timeout) const
+{
+	return true;
+}
+
+std::ptrdiff_t SerialWriter::Write(const char * data, 
+	int64_t size, 
+	std::ptrdiff_t timeout)
+{
+	for (int64_t i = 0; i < size; ++i)
+	{
+		m_serial << *data;
+		++data;
+	}
+	return size;
+}
+
+SerialReader::SerialReader(Serial & serial)
+	:m_serial(serial)
+{
+
+}
+
+bool SerialReader::ReadReady(std::ptrdiff_t timeout) const
+{
+	return m_serial.Left() > 0;
+}
+
+cg::ArrayView SerialReader::Read(int64_t expectedSize,
+	std::ptrdiff_t timeout)
+{
+	if (!ReadReady(timeout))
+		return cg::ArrayView();
+	cg::ArrayView av(expectedSize);
+	auto p = av.data();
+	for (int64_t i = 0; i < expectedSize; ++i)
+	{
+		m_serial.Pull(*p);
+		++p;
+	}
+	return av;
 }
 
 }

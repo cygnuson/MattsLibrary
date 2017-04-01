@@ -96,6 +96,15 @@ public:
 	/**Get a char* with the serial.
 	\return An array view with the data.*/
 	cg::ArrayView GetArrayView() const;
+	/**Get the size of the data currently in the serial.
+	\return The amount of bytes currenty in the serial.*/
+	std::size_t Size() const;
+	/**Dtermine where the reading position is at.
+	\return The position of the reader.*/
+	std::size_t Position() const;
+	/**Determine if there are any bytes left to read.
+	\return The amount of bytes that can be read immediatly.*/
+	std::size_t Left() const;
 private:
 	/**The data.*/
 	std::vector<char> m_data;
@@ -103,6 +112,51 @@ private:
 	std::size_t m_pos = 1;
 	/**True for little endian system.*/
 	bool m_isLittleEndian = cg::Endian::little;
+};
+
+class SerialWriter : public cg::Writer
+{
+public:
+	/**Create an object.
+	\param serial The serial to be written to.*/
+	SerialWriter(Serial& serial);
+	/**Check if the object is ready to write. Will always be true for this.
+	\param timeout The amount of time to wait untill the writer is ready.
+	\return True always.*/
+	virtual bool WriteReady(std::ptrdiff_t timeout = 0) const override;
+	/**Write to the serial object.
+	\param data The data to be written.
+	\param size The amount of data to be written.
+	\param timeout The amount of time to wait for the writer to be ready.
+	\return The amount of bytes written.*/
+	virtual std::ptrdiff_t Write(const char * data,
+		int64_t size,
+		std::ptrdiff_t timeout = 0) override;
+private:
+	/**A reference to the serial to be written to.*/
+	cg::Serial& m_serial;
+};
+
+class SerialReader : public cg::Reader
+{
+public:
+	/**Create a reader object for extracting data from a serial.
+	\param serial The serial to extracted from.*/
+	SerialReader(Serial& serial);
+	/**Determine if the serial is ready to be read from.
+	\param timeout The amount of time to wait untill ready.
+	\return True if there is something to be read.*/
+	virtual bool ReadReady(std::ptrdiff_t timeout = 0) const override;
+	/**Read data.
+	\param expectedSize An option size that will be read in.
+	\param expectedSize The amount of data to read.
+	\param timeout The amount of time to wait for readyness.
+	\return An array view with the data.*/
+	virtual cg::ArrayView Read(int64_t expectedSize,
+		std::ptrdiff_t timeout = 0) override;
+private:
+	/**A reference to the serial to access.*/
+	cg::Serial& m_serial;
 };
 
 template<typename T>

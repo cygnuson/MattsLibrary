@@ -10,6 +10,8 @@
 #include "exception.hpp"
 #include "ArrayView.hpp"
 
+#define _DEBUGFILESYSTEM _DRBUG && 1
+
 #if defined(_WIN32)
 #define StatFunction _stat64
 using StatStruct = struct _stat64;

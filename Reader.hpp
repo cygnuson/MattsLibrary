@@ -5,6 +5,8 @@
 #include "LogAdaptor.hpp"
 #include "ArrayView.hpp"
 
+#define _DEBUGREADER _DEBUG && 1
+
 namespace cg {
 
 /**An interface class to facilitate read of various locations.*/
