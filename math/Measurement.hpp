@@ -28,7 +28,7 @@ public:
 	\param num The number to use.
 	\param power The power to use.*/
 	template<typename...Units>
-	Measurement(const NumType& num = 0,
+	Measurement(const cg::math::Rational<NumType>& num = 0,
 		const NumType& power = 0,
 		cg::math::Prefix prefix = Prefix::None,
 		Units...units);
@@ -149,7 +149,8 @@ private:
 
 template<typename NumType>
 template<typename...Units>
-inline Measurement<NumType>::Measurement(const NumType & num,
+inline Measurement<NumType>::Measurement(
+	const cg::math::Rational<NumType> & num,
 	const NumType & power,
 	cg::math::Prefix prefix,
 	Units...units)
@@ -459,7 +460,7 @@ inline void Measurement<NumType>::Equalize(SelfType & first,
 	auto& larger = first.m_pow > second.m_pow ? first : second;
 	auto& lesser = first.m_pow > second.m_pow ? second : first;
 	auto diff = larger.m_pow - lesser.m_pow;
-	larger.m_base *= cg::RTPower(10, diff);
+	larger.m_base *= cg::RTPower<NumType>(10, diff);
 	larger.m_pow -= diff;
 }
 

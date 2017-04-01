@@ -456,6 +456,8 @@ inline void Rational<DataType>::MakeReciprocal()
 template<typename DataType>
 inline void Rational<DataType>::Simplify()
 {
+	if (m_numerator == 0)
+		return;
 	if (m_denominator == m_numerator)
 	{
 		m_denominator = 1;
