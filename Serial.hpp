@@ -10,6 +10,18 @@
 
 namespace cg {
 
+class Serial;
+
+/**Interface for serializing.*/
+class Serializable
+{
+public:
+	/**Push this object to the serial.*/
+	virtual void Push(cg::Serial& s) = 0;
+	/**Pull data from the serial to this object.*/
+	virtual void Pull(cg::Serial& s) = 0;
+};
+
 /**A class that will accumulate any data for sending.*/
 class Serial
 {
@@ -57,7 +69,7 @@ public:
 	\param obj The object to stream in.
 	\return A ref to this object.*/
 	template<typename T>
-	Serial& operator<<(const T& obj);
+	Serial& operator<<(T& obj);
 	/**Stream operator.
 	\param obj The object to stream out.
 	\return A ref to this object.*/
@@ -67,7 +79,14 @@ public:
 	\tparam T The type of data to push.
 	\param data The data to push.*/
 	template<typename T>
-	void Push(const T& data);
+	std::enable_if_t<std::is_fundamental<T>::value, void>
+		Push(const T& data);
+	/**Push data to the serial.
+	\tparam T The type of data to push.
+	\param data The data to push.*/
+	template<typename T>
+	inline std::enable_if_t<std::is_base_of<Serializable,T>::value, void>
+		Push(T& data);
 	/**Push data to the serial.
 	\tparam T The type of data to push.
 	\param data The data to push.*/
@@ -80,7 +99,14 @@ public:
 	\param out The place to put the data.
 	\tparam T The type of obj to receive data.*/
 	template<typename T>
-	void Pull(T& out);
+	std::enable_if_t<std::is_fundamental<T>::value, void>
+		Pull(T& out);
+	/**Get data from the stream. Will advance the pointer.
+	\param out The place to put the data.
+	\tparam T The type of obj to receive data.*/
+	template<typename T>
+	inline std::enable_if_t<std::is_base_of<Serializable, T>::value, void>
+		Pull(T& out);
 	/**Get data from the stream. Will advance the pointer.
 	\param out The place to put the data.
 	\tparam T The type of obj to receive data.*/
@@ -160,7 +186,7 @@ private:
 };
 
 template<typename T>
-inline Serial & Serial::operator<<(const T & obj)
+inline Serial & Serial::operator<<(T & obj)
 {
 	this->Push(obj);
 	return *this;
@@ -174,9 +200,9 @@ inline Serial & Serial::operator >> (T & obj)
 }
 
 template<typename T>
-inline void Serial::Push(const T & data)
+inline std::enable_if_t<std::is_fundamental<T>::value, void>
+Serial::Push(const T & data)
 {
-	Reset();
 	const static std::size_t size = sizeof(data);
 	for (std::size_t i = 0; i < size; ++i)
 	{
@@ -184,6 +210,12 @@ inline void Serial::Push(const T & data)
 		char b = *(((char*)&data) + i);
 		m_data.push_back(b);
 	}
+}
+template<typename T>
+inline std::enable_if_t<std::is_base_of<Serializable, T>::value, void>
+Serial::Push(T & data)
+{
+	data.Push(*this);
 }
 
 template<typename T>
@@ -193,11 +225,18 @@ inline void Serial::Push(T * data)
 }
 
 template<typename T>
-inline void Serial::Pull(T & out)
+inline std::enable_if_t<std::is_fundamental<T>::value, void>
+Serial::Pull(T & out)
 {
 	out = *((T*)(m_data.data() + m_pos));
 	m_pos += sizeof(T);
 	cg::Endian::MakeHostOrder(out, m_isLittleEndian);
+}
+template<typename T>
+inline std::enable_if_t<std::is_base_of<Serializable, T>::value, void>
+Serial::Pull(T & out)
+{
+	out.Pull(*this);
 }
 
 template<typename T>

@@ -21,6 +21,10 @@ public:
 	/**Load the data from an array view into the record.
 	\param data The data to load as ArrayView.*/
 	virtual void Load(const cg::ArrayView& data) = 0;
+	/**Get the serialized size of the record.  A table requires that all 
+	records are the same size.
+	\return The size of the record if it was serialized.*/
+	virtual std::size_t Size() const = 0;
 private:
 
 };

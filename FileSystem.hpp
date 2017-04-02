@@ -300,6 +300,20 @@ public:
 	\return A string with just the extension of the file.  If the file has no
 	extension, then a blank string will be returned.*/
 	std::string Ext() const;
+	/**Shift the data to the right in the file.
+	\param pos The position to shift from.
+	\param amt The amount to shift.
+	\param fillByte The byte that will fill in for the emptied space.
+	\param arrayLike False if the data shifted off the right edge should 
+	expand the file to keep the data.*/
+	void ShiftRight(std::size_t pos, std::size_t amt,
+		char fillByte = 0, bool arrayLike = false);
+	/**Shift the data to the left in the file.
+	\param pos The position to shift from.
+	\param amt The amount to shift.
+	\param fillByte The byte that will fill in for the emptied space.*/
+	void ShiftLeft(std::size_t pos, std::size_t amt,
+		char fillByte = 0);
 private:
 	using cg::LogAdaptor<File>::EnableLogs;
 	using cg::LogAdaptor<File>::LogNote;

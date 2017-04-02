@@ -188,7 +188,7 @@ bool File::Write(const char * data, std::size_t size, std::ptrdiff_t pos)
 
 bool File::Write(const cg::ArrayView & data, std::ptrdiff_t pos)
 {
-	return Write(data.data(),data.size(),pos);
+	return Write(data.data(), data.size(), pos);
 }
 
 bool File::Read(char * data, std::size_t size, std::ptrdiff_t pos)
@@ -227,7 +227,48 @@ std::string File::Ext() const
 	auto dot = m_name.find_last_of('.');
 	if (dot == std::string::npos)
 		return "";
-	return m_name.substr(dot+1);
+	return m_name.substr(dot + 1);
+}
+void File::ShiftRight(std::size_t pos, std::size_t amt,
+	char fillByte, bool arrayLike)
+{
+	auto size = FileSystem::FileSize(FullPath()) - pos;
+	cg::ArrayView data(size);
+	m_stream.open(FullPath().c_str(), std::ios::binary | std::ios::in);
+	m_stream.seekg(pos);
+	m_stream.read(data.data(), size);
+	m_stream.close();
+	m_stream.open(FullPath().c_str(), std::ios::binary
+		| std::ios::out
+		| std::ios::in);
+	m_stream.seekp(pos + amt);
+	if (arrayLike)
+		m_stream.write(data.data(), size - amt);
+	else
+		m_stream.write(data.data(), size);
+	m_stream.seekp(pos);
+	while (amt-- > 0)
+		m_stream.write(&fillByte, 1);
+	m_stream.close();
+}
+void File::ShiftLeft(std::size_t pos, std::size_t amt, char fillByte)
+{
+
+	auto size = pos;
+	cg::ArrayView data(size);
+	m_stream.open(FullPath().c_str(), std::ios::binary | std::ios::in);
+	m_stream.seekg(amt);
+	m_stream.read(data.data(), size - amt);
+	m_stream.close();
+	m_stream.open(FullPath().c_str(), std::ios::binary
+		| std::ios::out
+		| std::ios::in);
+	m_stream.seekp(0);
+	m_stream.write(data.data(), size - amt);
+	m_stream.seekp(pos);
+	while (amt-- > 0)
+		m_stream.write(&fillByte, 1);
+	m_stream.close();
 }
 /*************************************************************************************************/
 
@@ -268,7 +309,7 @@ bool FileSystem::MakeDir(const std::string & dir, int mode)
 	throw FileSystemException(errno);
 #endif
 
-}
+	}
 auto FileSystem::Status(const std::string & file)
 {
 	StatStruct sb;
