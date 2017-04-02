@@ -30,4 +30,17 @@ protected:/********************************************************************P
 
 };
 
+class IndexOutOfBoundsException : public cg::Exception
+{
+public:
+
+	/**Translate the error to a message that can be read.
+
+	\return A string that shows the value of the object.*/
+	virtual std::string ToString() const
+	{
+		return "The index is out of bounds.";
+	}
+};
+
 }

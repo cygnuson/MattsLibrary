@@ -270,6 +270,10 @@ void File::ShiftLeft(std::size_t pos, std::size_t amt, char fillByte)
 		m_stream.write(&fillByte, 1);
 	m_stream.close();
 }
+std::size_t File::Size() const
+{
+	return FileSystem::FileSize(FullPath());
+}
 /*************************************************************************************************/
 
 bool FileSystem::ms_autoCreate = false;

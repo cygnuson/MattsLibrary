@@ -17,7 +17,7 @@ class Serializable
 {
 public:
 	/**Push this object to the serial.*/
-	virtual void Push(cg::Serial& s) = 0;
+	virtual void Push(cg::Serial& s) const = 0;
 	/**Pull data from the serial to this object.*/
 	virtual void Pull(cg::Serial& s) = 0;
 };
@@ -69,7 +69,7 @@ public:
 	\param obj The object to stream in.
 	\return A ref to this object.*/
 	template<typename T>
-	Serial& operator<<(T& obj);
+	Serial& operator<<(const T& obj) ;
 	/**Stream operator.
 	\param obj The object to stream out.
 	\return A ref to this object.*/
@@ -80,18 +80,18 @@ public:
 	\param data The data to push.*/
 	template<typename T>
 	std::enable_if_t<std::is_fundamental<T>::value, void>
-		Push(const T& data);
+		Push(const T& data) ;
 	/**Push data to the serial.
 	\tparam T The type of data to push.
 	\param data The data to push.*/
 	template<typename T>
 	inline std::enable_if_t<std::is_base_of<Serializable,T>::value, void>
-		Push(T& data);
+		Push(T& data) ;
 	/**Push data to the serial.
 	\tparam T The type of data to push.
 	\param data The data to push.*/
 	template<typename T>
-	void Push(T* data);
+	void Push(T* data) ;
 	/**Push a string to the serial.
 	\param str A string to push to the serial.*/
 	void Push(const std::string& str);
@@ -186,7 +186,7 @@ private:
 };
 
 template<typename T>
-inline Serial & Serial::operator<<(T & obj)
+inline Serial & Serial::operator<<(const T & obj)
 {
 	this->Push(obj);
 	return *this;

@@ -314,6 +314,9 @@ public:
 	\param fillByte The byte that will fill in for the emptied space.*/
 	void ShiftLeft(std::size_t pos, std::size_t amt,
 		char fillByte = 0);
+	/**Get the size of the file.
+	\return The size of the file.*/
+	std::size_t Size() const;
 private:
 	using cg::LogAdaptor<File>::EnableLogs;
 	using cg::LogAdaptor<File>::LogNote;
