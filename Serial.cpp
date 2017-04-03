@@ -77,6 +77,10 @@ cg::ArrayView Serial::GetArrayView() const
 {
 	return cg::ArrayView::Copy(m_data.data(), m_data.size());
 }
+cg::ArrayView Serial::GetRawArrayView() const
+{
+	return cg::ArrayView::Copy(m_data.data()+1, m_data.size()-1);
+}
 std::size_t Serial::Size() const
 {
 	return m_data.size()-1;

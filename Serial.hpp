@@ -20,7 +20,31 @@ public:
 	virtual void Push(cg::Serial& s) const = 0;
 	/**Pull data from the serial to this object.*/
 	virtual void Pull(cg::Serial& s) = 0;
+	/**Get the serialized size of the object.*/
+	virtual std::size_t SizeOf() const = 0;
 };
+
+template<typename T>
+struct IsSerializable
+{
+	const static bool value =
+		std::is_base_of<Serializable, T>::value
+		|| std::is_fundamental<T>::value;
+};
+
+template<typename T>
+std::enable_if_t<std::is_base_of<Serializable, T>::value, std::size_t>
+SizeOf(const T& obj)
+{
+	return obj.SizeOf();
+}
+
+template<typename T>
+std::enable_if_t<!std::is_base_of<Serializable, T>::value, std::size_t>
+SizeOf(const T& obj)
+{
+	return sizeof(T);
+}
 
 /**A class that will accumulate any data for sending.*/
 class Serial
@@ -119,9 +143,12 @@ public:
 	/**Get a char* with the serial.
 	\return A char* with he data.*/
 	std::pair<const char*, std::size_t> Get() const;
-	/**Get a char* with the serial.
+	/**Get an array view with the serial.
 	\return An array view with the data.*/
 	cg::ArrayView GetArrayView() const;
+	/**Get an array view with the serial, EXCLUDING the endian byte.
+	\return An array view with the data.*/
+	cg::ArrayView GetRawArrayView() const;
 	/**Get the size of the data currently in the serial.
 	\return The amount of bytes currenty in the serial.*/
 	std::size_t Size() const;

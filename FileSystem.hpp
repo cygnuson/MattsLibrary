@@ -247,6 +247,8 @@ private:
 class File : public cg::LogAdaptor<File>
 {
 public:
+	/**Flush and close*/
+	~File();
 	/**Create the file.
 	\param dir The directory the file will exist in.
 	\param name The name of the file.*/
@@ -317,6 +319,10 @@ public:
 	/**Get the size of the file.
 	\return The size of the file.*/
 	std::size_t Size() const;
+	/**Make sure the file stream is flushed and closed.*/
+	void Close();
+	/**Flush the stream*/
+	void Flush();
 private:
 	using cg::LogAdaptor<File>::EnableLogs;
 	using cg::LogAdaptor<File>::LogNote;

@@ -124,6 +124,11 @@ void Dir::Init(std::string path)
 	}
 }
 /************************************************************************************************/
+
+File::~File()
+{
+	Close();
+}
 File::File(const cg::Dir & dir, const std::string & name)
 	:m_dir(dir), m_name(name)
 {
@@ -153,7 +158,9 @@ File::File(std::string path)
 
 bool File::Touch() const
 {
-	return m_dir.Touch() && FileSystem::Touch(m_dir.ToString() + m_name);
+	bool a = m_dir.Touch();
+	bool b = FileSystem::Touch(m_dir.ToString() + m_name);
+	return a || b;
 }
 
 bool File::Remove() const
@@ -273,6 +280,16 @@ void File::ShiftLeft(std::size_t pos, std::size_t amt, char fillByte)
 std::size_t File::Size() const
 {
 	return FileSystem::FileSize(FullPath());
+}
+void File::Close()
+{
+	if (m_stream.is_open())
+		m_stream.close();
+}
+void File::Flush()
+{
+	if (m_stream.is_open())
+		m_stream.flush();
 }
 /*************************************************************************************************/
 
