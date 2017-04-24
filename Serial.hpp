@@ -16,12 +16,12 @@ class Serial;
 class Serializable
 {
 public:
-	/**Push this object to the serial.*/
+	/**Push this object to the serial.
+	\param s The serial object to push to.*/
 	virtual void Push(cg::Serial& s) const = 0;
-	/**Pull data from the serial to this object.*/
+	/**Pull data from the serial to this object.
+	\param s The serial object to pull from.*/
 	virtual void Pull(cg::Serial& s) = 0;
-	/**Get the serialized size of the object.*/
-	virtual std::size_t SizeOf() const = 0;
 };
 
 template<typename T>
@@ -34,14 +34,14 @@ struct IsSerializable
 
 template<typename T>
 std::enable_if_t<std::is_base_of<Serializable, T>::value, std::size_t>
-SizeOf(const T& obj)
+SizeOf()
 {
-	return obj.SizeOf();
+	return T::SizeOf;
 }
 
 template<typename T>
 std::enable_if_t<!std::is_base_of<Serializable, T>::value, std::size_t>
-SizeOf(const T& obj)
+SizeOf()
 {
 	return sizeof(T);
 }
@@ -158,6 +158,8 @@ public:
 	/**Determine if there are any bytes left to read.
 	\return The amount of bytes that can be read immediatly.*/
 	std::size_t Left() const;
+	/**Empty the serial vector including the endian byte.*/
+	void ClearAll();
 private:
 	/**The data.*/
 	std::vector<char> m_data;
@@ -270,6 +272,18 @@ template<typename T>
 inline void Serial::Pull(T * out)
 {
 	Pull(*out);
+}
+
+/*****************************************************************************/
+template<typename T>
+void Push(cg::Serial& s, const T& t)
+{
+	s << t;
+}
+template<typename T>
+void Pull(cg::Serial& s, T& t)
+{
+	s >> t;
 }
 
 }

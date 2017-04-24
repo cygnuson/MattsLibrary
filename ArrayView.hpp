@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstring>
 
 #include "Memory.hpp"
 
@@ -153,6 +154,23 @@ struct ArrayViewImpl
 		cg::DeleteA(__FUNCSTR__,m_data);
 		m_data = nullptr;
 		m_size = 0;
+	}
+	/**Copy this data to another location.
+	\param data The location to write to.
+	\param size The max size of the destination.*/
+	void CopyData(char* data, std::size_t size)
+	{
+		auto sSize = size < m_size ? size : m_size;
+		std::memcpy(data, m_data, sSize);
+	}
+	/**Copy this data (as string) to another location.  The copy will stop when
+	the null term for strings is reached.
+	\param data The location to write to.
+	\param size The max size of the destination.*/
+	void CopyString(char* data, std::size_t size)
+	{
+		auto sSize = size < m_size ? size : m_size;
+		strcpy_s(data, size, m_data);
 	}
 private:
 	/**A pointer to the data.*/

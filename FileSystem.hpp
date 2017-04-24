@@ -8,7 +8,7 @@
 #include "OSInclude.hpp"
 #include "LogAdaptor.hpp"
 #include "exception.hpp"
-#include "ArrayView.hpp"
+#include "Serial.hpp"
 
 #define _DEBUGFILESYSTEM _DRBUG && 1
 
@@ -141,6 +141,9 @@ public:
 	linux systems and creating a specific type of file. Man stat(2) for modes.
 	\return True if a directory was created.*/
 	static bool MakeDir(const std::string& dir, int mode = 0);
+	/**Remove a file.
+	\param path The path to the file to remove.*/
+	static bool Remove(const std::string& path);
 	/**Get the status object for a file.
 	\param file The file to check into.
 	\return A struct object with the status of the file.*/
@@ -151,8 +154,8 @@ public:
 	static std::size_t FileSize(const std::string& file);
 	/**Determine if a file or directory exists.
 	\param path The path of the file or dir.
-	\return -1 if it is a directory. 0 if the file does not exist. 1 if the file
-	does exist, but is not a directory.*/
+	\return -1 if it is a directory. 0 if the file does not exist. 1 if the 
+	file does exist, but is not a directory.*/
 	static int FileExists(const std::string& file);
 	/**Create a file in an existing directory with no space.
 	\param file The name of the file to create.
@@ -225,6 +228,9 @@ public:
 	/**Get the string for this dir.
 	\return The string to that is the path.*/
 	std::string ToString() const;
+	/**Dtermine if the directory exists or not.
+	\return True if the directory exists.*/
+	bool Exists() const;
 private:
 	using cg::LogAdaptor<Dir>::EnableLogs;
 	using cg::LogAdaptor<Dir>::LogNote;
@@ -272,6 +278,12 @@ public:
 	\param size The amount of data to write.
 	\return True if data was written.*/
 	bool Write(const char* data, std::size_t size, std::ptrdiff_t pos = -1);
+	/**Fill a portion of the file with a byte.
+	\param byte The byte to fill with.
+	\param size The amount of bytes to fill.
+	\param pos The position to write to. If -1, will write to the current
+	stream position.*/
+	bool Write(char bt, std::size_t size, std::ptrdiff_t pos = -1);
 	/**Write to this file.
 	\param pos The position to write. Use 0 to write at the begining of the
 	file.  The internal stream position will automatically advance to the new
@@ -280,6 +292,17 @@ public:
 	\param data An array view with data to write.
 	\return True if data was written.*/
 	bool Write(const cg::ArrayView& data, std::ptrdiff_t pos = -1);
+	/**Write a serial object to the file.
+	\param pos The position to write. -1 will write to wherever the steam 
+	pointer is at.
+	\param s A reference to a serial object.
+	\return True if the file was written.*/
+	bool Write(cg::Serial& s, std::ptrdiff_t pos = -1);
+	/**Read directly into a serial object.
+	\param pos The postion to read from.
+	\param s A reference to a serial to receive the data.
+	\return True if the file was read.*/
+	bool Read(cg::Serial& s, std::ptrdiff_t pos = -1);
 	/**Read from the file.
 	\param pos The position to read from.
 	\param data The place to put the data.
@@ -323,6 +346,16 @@ public:
 	void Close();
 	/**Flush the stream*/
 	void Flush();
+	/**Determine if this file exists.
+	\return True if the file exists and is not a directory.*/
+	bool Exists() const;
+	/**Change the path of the file object.
+	\param path The path to set.*/
+	void SetPath(std::string path);
+	/**Set the path of the file object.
+	\param dir The directory.
+	\param file THe file in dir.*/
+	void SetPath(const cg::Dir & dir, const std::string & name);
 private:
 	using cg::LogAdaptor<File>::EnableLogs;
 	using cg::LogAdaptor<File>::LogNote;

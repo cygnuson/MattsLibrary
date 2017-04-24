@@ -18,6 +18,7 @@ Dir::Dir(Dir && other)
 }
 void Dir::operator=(const Dir & other)
 {
+	m_path.swap(std::vector<std::string>());
 	m_path.insert(m_path.begin(), other.m_path.begin(), other.m_path.end());
 }
 void Dir::operator=(Dir && other)
@@ -36,6 +37,11 @@ std::string Dir::ToString() const
 		str += "/";
 	}
 	return str;
+}
+
+bool Dir::Exists() const
+{
+	return FileSystem::FileExists(ToString()) == -1;
 }
 
 bool Dir::CreateStructure() const
@@ -138,22 +144,7 @@ File::File(const cg::Dir & dir, const std::string & name)
 File::File(std::string path)
 {
 	EnableLogs(true, "FileSystem::File");
-	for (std::size_t i = 0; path[i] != 0; ++i)
-	{
-		if (path[i] == '\\')
-			path[i] = '/';
-	}
-	std::size_t lastSlash = path.find_last_of('/');
-	if (lastSlash != std::string::npos)
-	{
-		m_dir = cg::Dir(path.substr(0, lastSlash));
-		++lastSlash;
-		m_name = path.substr(lastSlash);
-	}
-	else
-	{
-		m_name = path;
-	}
+	SetPath(path);
 }
 
 bool File::Touch() const
@@ -193,9 +184,38 @@ bool File::Write(const char * data, std::size_t size, std::ptrdiff_t pos)
 	return true;
 }
 
+bool File::Write(char bt, std::size_t size, std::ptrdiff_t pos)
+{
+	char* ch = cg::NewA<char>(__FUNCSTR__,size);
+	for (std::size_t i = 0; i < size; ++i)
+		ch[i] = bt;
+	bool wrote = Write(ch, size, pos);
+	cg::DeleteA(__FUNCSTR__, ch);
+	return wrote;
+}
+
 bool File::Write(const cg::ArrayView & data, std::ptrdiff_t pos)
 {
 	return Write(data.data(), data.size(), pos);
+}
+
+bool File::Write(cg::Serial & s, std::ptrdiff_t pos)
+{
+	auto av = s.GetArrayView();
+	return Write(av.data(), av.size(), pos);
+}
+
+bool File::Read(cg::Serial & s, std::ptrdiff_t pos)
+{
+	uint64_t size = this->Size();
+	cg::ArrayView av(size);
+	bool read = Read(av, pos);
+	s.ClearAll();
+	if (!read)
+		return false;
+	cg::SerialWriter sw(s);
+	sw.Write(av.data(), av.size());
+	return true;
 }
 
 bool File::Read(char * data, std::size_t size, std::ptrdiff_t pos)
@@ -291,6 +311,35 @@ void File::Flush()
 	if (m_stream.is_open())
 		m_stream.flush();
 }
+bool File::Exists() const
+{
+	return cg::FileSystem::FileExists(FullPath().c_str()) == 1;
+}
+void File::SetPath(std::string path)
+{
+	for (std::size_t i = 0; path[i] != 0; ++i)
+	{
+		if (path[i] == '\\')
+			path[i] = '/';
+	}
+	std::size_t lastSlash = path.find_last_of('/');
+	if (lastSlash != std::string::npos)
+	{
+		m_dir = cg::Dir(path.substr(0, lastSlash));
+		++lastSlash;
+		m_name = path.substr(lastSlash);
+	}
+	else
+	{
+		m_name = path;
+	}
+}
+void File::SetPath(const cg::Dir & dir, 
+	const std::string & name)
+{
+	m_dir = dir;
+	m_name = name;
+}
 /*************************************************************************************************/
 
 bool FileSystem::ms_autoCreate = false;
@@ -331,6 +380,14 @@ bool FileSystem::MakeDir(const std::string & dir, int mode)
 #endif
 
 	}
+bool FileSystem::Remove(const std::string & path)
+{
+	int ret = std::remove(path.c_str());
+	if (ret == 0)
+		return true;
+	else
+		return false;
+}
 auto FileSystem::Status(const std::string & file)
 {
 	StatStruct sb;

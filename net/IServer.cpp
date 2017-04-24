@@ -79,7 +79,13 @@ void IServer::CheckClients()
 		if (open != 1)
 		{
 			SocketRemoved(open == 0 ? true : false, it);
-			it = m_clients.erase(it);
+			if (m_clients.size() > 1)
+				it = m_clients.erase(it);
+			else
+			{
+				m_clients.erase(it);
+				break;
+			}
 			continue;
 		}
 		if (it->ReadReady())

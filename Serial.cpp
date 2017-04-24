@@ -93,6 +93,10 @@ std::size_t Serial::Left() const
 {
 	return Size() - Position();
 }
+void Serial::ClearAll()
+{
+	m_data.swap(std::vector<char>());
+}
 /*****************************************************************************/
 
 
