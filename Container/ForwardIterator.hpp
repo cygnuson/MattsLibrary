@@ -7,7 +7,7 @@
 
 namespace cg {
 
-
+/**A one directional forward iterator.*/
 template<typename T, typename NodeTypeT, bool Const = false>
 class ForwardIterator : public Iterator<T, Const>
 {
@@ -25,7 +25,6 @@ public:
 	/**default ctor*/
 	ForwardIterator() :m_node(nullptr) {};
 	/**Construct into a chain.
-	\param ptr THe pointer to the data.
 	\param node The pointer to the active node.*/
 	ForwardIterator(NodeType* node) {
 		m_node = node;

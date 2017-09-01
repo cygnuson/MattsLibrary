@@ -15,8 +15,11 @@ namespace cg {
 class Timer
 {
 public:
-
+	/**Create the timer.
+	\param startPaused True to start in a paused state.*/
 	Timer(bool startPaused = false);
+	/**Restart the timer
+	\return The amount of time sense Start() or Restart() was called.*/
 	std::chrono::nanoseconds Restart();
 	/**Get the time in seconds that passed sense the objects creation.*/
 	template<typename DurationType = std::chrono::duration<double>>
@@ -28,7 +31,7 @@ public:
 	/**get the chrono duration.
 	\return The time passed as a chrono duration.*/
 	std::chrono::nanoseconds GetDuration() const;
-	/*start the timer.*/
+	/**start the timer.*/
 	void Start();
 	/**Call a callable object FPS times per second.  The caller should return
 	false when its time to stop running.
@@ -62,7 +65,7 @@ public:
 	template<typename TimeUnit = std::chrono::duration<float>,
 		typename Caller, typename...Args>
 	static TimeUnit TimedCall(Caller& caller,
-		Args...args);
+		Args&&...args);
 	/**Translate any chrono::duration premade unit to a string.*/
 	template<typename T>
 	static std::string TranslateTimeUnit();
@@ -120,8 +123,8 @@ inline void Timer::CallOverTime(uint64_t amt,
 }
 
 template<typename TimeUnit, typename Caller, typename ...Args>
-inline TimeUnit Timer::TimedCall(Caller & caller, 
-	Args ...args)
+inline TimeUnit Timer::TimedCall(Caller& caller, 
+	Args&&...args)
 {
 	Timer timer;
 	timer.Start();

@@ -43,12 +43,12 @@ private:
 	/**True to keep running.*/
 	std::atomic_bool m_run = false;
 };
-
+/**The client portion of the pair.*/
 class EchoClient
 {
 public:
 	/**Create the echo client.
-	\param speed The speed of the syncing in fps.*/
+	\param fps The speed of the syncing in fps.*/
 	EchoClient(double fps = 30);
 	/**Start the syncing the stream to the echo server.
 	\param port The port to connect to.

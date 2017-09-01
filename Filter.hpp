@@ -6,7 +6,7 @@
 #include "ArrayView.hpp"
 
 namespace cg {
-
+/**The filter interface.*/
 class Filter
 {
 public:

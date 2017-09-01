@@ -20,7 +20,7 @@ public:
 	\return Serialized data as an ArrayView.*/
 	cg::ArrayView Serialize() const;
 	/**Deserilize the message.
-	\param data The arrayview to deserialize.*/
+	\param av The arrayview to deserialize.*/
 	void Deserialize(const cg::ArrayView& av);
 	/**The text involved in the message.*/
 	std::string m_text;

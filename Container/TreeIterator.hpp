@@ -6,7 +6,7 @@
 #define _DEBUGTREEITERATOR _DEBUG && _DEBUGBINARYTREENODE && 1
 
 namespace cg {
-
+/**Iterator for trees.*/
 template<typename T, typename NodeTypeT, bool Const = false,
 	bool Reverse = false>
 	class TreeIterator : public Iterator<T, Const>

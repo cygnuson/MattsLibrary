@@ -104,6 +104,7 @@ public:
 	/**Get the parent and grand parent of a node.
 	\param root The root node to search under.
 	\param node The node to get the info for.
+	\param fresh Recursion helper.
 	\return A pointer to the nodes parent, or nullptr if the node does not
 	exist under `root`.  A nullptr return may mean that root and node are the
 	same.
@@ -144,7 +145,7 @@ public:
 	\return True if the node is an after end node.*/
 	static bool IsAfterEnd(SelfType* node);
 	/**Get a special after end node.
-	\param root The root node that this after end node will lead to.
+	\param node The root node for which to start the search.
 	\return An node that signifies after end.*/
 	static SelfType* AfterEnd(SelfType* node);
 	/**Pointer member access.

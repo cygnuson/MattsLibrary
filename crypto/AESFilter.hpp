@@ -3,7 +3,7 @@
 #include "../Filter.hpp"
 
 namespace cg {
-
+/**A reader/writing filter for AES encryption.*/
 class AESEncryptFilter : public cg::Filter
 {
 public:
@@ -32,6 +32,7 @@ private:
 	const CryptoPP::SecByteBlock& m_iv;
 };
 
+/**A reader/writing filter for AES decryption.*/
 class AESDecryptFilter : public cg::Filter
 {
 public:

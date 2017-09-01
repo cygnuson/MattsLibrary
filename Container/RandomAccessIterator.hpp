@@ -6,7 +6,7 @@
 #define _DEBUGRANDOMACCESSITERATOR _DEBUG && 1
 
 namespace cg {
-
+/**An iterator for random access.*/
 template<typename T, typename NodeTypeT, bool Const = false,
 	bool Reverse = false>
 	class RandomAccessIterator : public Iterator<T, Const>

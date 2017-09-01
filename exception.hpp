@@ -4,7 +4,7 @@
 
 namespace cg {
 
-///A generic exception class for inhariting.
+/**A generic exception class for inhariting.*/
 class Exception : public cg::Stringable, public std::exception
 {
 public:
@@ -29,7 +29,7 @@ public:
 protected:/********************************************************************PROTECTED**********/
 
 };
-
+/**A generic outof bounds exception.*/
 class IndexOutOfBoundsException : public cg::Exception
 {
 public:

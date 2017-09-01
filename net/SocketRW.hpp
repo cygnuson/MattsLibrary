@@ -62,11 +62,11 @@ public:
 	cg::ArrayView Read(int64_t expectedSize = 0,
 		std::ptrdiff_t timeout = -1);
 	/**Set or update the reader filter ascociated with the socketRW.
-	\param filter The filter to be set. The filter object will become the 
+	\param newFilter The filter to be set. The filter object will become the 
 	property of the reader/writer and be deleted when the object destructs.*/
 	void SetReaderFilter(cg::Filter* newFilter);
 	/**Set or update the writer filter ascociated with the socketRW.
-	\param filter The filter to be set. The filter object will become the 
+	\param newFilter The filter to be set. The filter object will become the 
 	property of the reader/writer and be deleted when the object destructs.*/
 	void SetWriterFilter(cg::Filter* newFilter);
 	/**Check and see if the socket has data available.

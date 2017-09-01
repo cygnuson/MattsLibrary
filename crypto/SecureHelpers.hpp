@@ -19,7 +19,7 @@
 
 
 namespace cg {
-
+/**Exception for encryption errors.*/
 class EncryptionException : public cg::Exception
 {
 public:
@@ -113,7 +113,7 @@ struct KeyPair
 	/**The creation time of the keys as time sense epoch.*/
 	uint64_t m_time = 0;
 };
-
+/**Static helpers for encryption.*/
 class SecureHelpers
 {
 public:
@@ -204,11 +204,11 @@ public:
 		const CryptoPP::SecByteBlock& iv);
 	/**Encrypt with AES. If the key or IV is empty, they will be generated and
 	placed into the data object with the max key and Iv size.
-	\param An AESData object with a key, IV, and data.  THe data will be
+	\param data An AESData object with a key, IV, and data.  THe data will be
 	overwritten with the new data.*/
 	static void AESEncrypt(AESData& data);
 	/**Decrypt with AES.
-	\param An AESData object with a key, IV, and data.  THe data will be
+	\param data An AESData object with a key, IV, and data.  THe data will be
 	overwritten with the new data.*/
 	static void AESDecrypt(AESData& data);
 	/**Decrypt with AES.
@@ -234,6 +234,8 @@ public:
 	/**Generate a random AES key with the max key length.
 	\param pass A user string that will be padded to the key size.  pass must
 	be 1<=[pass]=<32
+	\param salt Salt the hash for taste.
+	\param pass The string pass that qill be part of the salt generation.
 	\return The key in the form of a secbyteblock.*/
 	static CryptoPP::SecByteBlock MakeAESKey(const std::string& pass,
 		const CryptoPP::SecByteBlock& salt);

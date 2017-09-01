@@ -4,7 +4,7 @@
 #include <type_traits>
 
 namespace cg {
-/*
+/**
 value is FALSE for little endian systems, and TRUE for big endian systems.
 */
 class Endian {

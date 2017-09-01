@@ -23,15 +23,16 @@ public:
 	\param s The serial object to pull from.*/
 	virtual void Pull(cg::Serial& s) = 0;
 };
-
+/**Helper for serializables.*/
 template<typename T>
 struct IsSerializable
 {
+	/**The dtermined value.*/
 	const static bool value =
 		std::is_base_of<Serializable, T>::value
 		|| std::is_fundamental<T>::value;
 };
-
+/**Abstraction for size of*/
 template<typename T>
 std::enable_if_t<std::is_base_of<Serializable, T>::value, std::size_t>
 SizeOf()
@@ -39,6 +40,7 @@ SizeOf()
 	return T::SizeOf;
 }
 
+/**Abstraction for size of*/
 template<typename T>
 std::enable_if_t<!std::is_base_of<Serializable, T>::value, std::size_t>
 SizeOf()
@@ -138,7 +140,7 @@ public:
 	void Pull(T* out);
 	/**Get string data from the serial. will advance the positon. will extract
 	untill the null byte is received.
-	\param str The string to receive the letters.*/
+	\param out The string to receive the letters.*/
 	void Pull(std::string& out);
 	/**Get a char* with the serial.
 	\return A char* with he data.*/
@@ -168,7 +170,7 @@ private:
 	/**True for little endian system.*/
 	bool m_isLittleEndian = cg::Endian::little;
 };
-
+/**A serializing interface for the filter system.*/
 class SerialWriter : public cg::Writer
 {
 public:
@@ -192,6 +194,7 @@ private:
 	cg::Serial& m_serial;
 };
 
+/**A serializing interface for the filter system.*/
 class SerialReader : public cg::Reader
 {
 public:

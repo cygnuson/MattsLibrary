@@ -66,14 +66,32 @@ public:
 	static long double Double(
 		long double max);
 
+	/**Generate data
+	\return the generated data.*/
 	static char UpperAlphaChar();
+	/**Generate data
+	\return the generated data.*/
 	static char UpperHexChar();
+	/**Generate data
+	\return the generated data.*/
 	static char UpperAlphaNumChar();
+	/**Generate data
+	\return the generated data.*/
 	static char LowerAlphaChar();
+	/**Generate data
+	\return the generated data.*/
 	static char MixedAlphaChar();
+	/**Generate data
+	\return the generated data.*/
 	static char LowerHexChar();
+	/**Generate data
+	\return the generated data.*/
 	static char LowerAlphaNumChar();
+	/**Generate data
+	\return the generated data.*/
 	static char MixedAlphaNumChar();
+	/**Generate data
+	\return the generated data.*/
 	static char NumChar();
 private:
 	/**Get the single twister instance to use. Its in a functions so that 

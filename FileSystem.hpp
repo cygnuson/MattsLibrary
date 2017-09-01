@@ -20,7 +20,7 @@ using StatStruct = struct _stat64;
 #endif
 
 namespace cg {
-
+/**Exceptions for file systems.*/
 class FileSystemException :public cg::Exception
 {
 public:
@@ -153,7 +153,7 @@ public:
 	\return The size of the file.*/
 	static std::size_t FileSize(const std::string& file);
 	/**Determine if a file or directory exists.
-	\param path The path of the file or dir.
+	\param file The path of the file or dir.
 	\return -1 if it is a directory. 0 if the file does not exist. 1 if the 
 	file does exist, but is not a directory.*/
 	static int FileExists(const std::string& file);
@@ -162,11 +162,11 @@ public:
 	\return True if the file was created or exists already.*/
 	static bool Touch(const std::string& file);
 	/**Determine if a file is a directory.
-	\param name The name of the file.
+	\param file The name of the file.
 	\return True if the path leads to a directory.*/
 	static bool IsDirectory(const std::string& file);
 	/**Determine if a file is not a directory.
-	\param name The name of the file.
+	\param file The name of the file.
 	\return True if the file is not a directory.*/
 	static bool IsFile(const std::string& file);
 private:
@@ -179,7 +179,7 @@ class Dir : public cg::LogAdaptor<Dir>
 {
 public:
 	/**Create the file without checking if it exists or trying to create it.
-	\param filename The name of the file and its directory.*/
+	\param path The name of the file and its directory.*/
 	Dir(const std::string& path = "");
 	/**Copy a directory from another.
 	\param other The other dir to copy.*/
@@ -193,19 +193,19 @@ public:
 	/**Move a directory from another.
 	\param other The other dir to move.*/
 	void operator=(Dir&& other);
-	/*Add another directory to the end of this one.
+	/**Add another directory to the end of this one.
 	\param newDir The the dir(s) to add to this one.
 	\return A ref to this object.*/
 	Dir& operator+=(const std::string& newDir);
-	/*Add another directory to the end of this one.
+	/**Add another directory to the end of this one.
 	\param newDir The the dir(s) to add to this one.
 	\return A ref to this object.*/
 	Dir& operator+=(const Dir& newDir);
-	/*Add another directory to the end of this one.
+	/**Add another directory to the end of this one.
 	\param newDir The the dir(s) to add to this one.
 	\return A new Dir object.*/
 	Dir operator+(const std::string& newDir) const;
-	/*Add another directory to the end of this one.
+	/**Add another directory to the end of this one.
 	\param newDir The the dir(s) to add to this one.
 	\return A new Dir object.*/
 	Dir operator+(const Dir& newDir) const;
@@ -279,7 +279,7 @@ public:
 	\return True if data was written.*/
 	bool Write(const char* data, std::size_t size, std::ptrdiff_t pos = -1);
 	/**Fill a portion of the file with a byte.
-	\param byte The byte to fill with.
+	\param bt The byte to fill with.
 	\param size The amount of bytes to fill.
 	\param pos The position to write to. If -1, will write to the current
 	stream position.*/
@@ -354,7 +354,7 @@ public:
 	void SetPath(std::string path);
 	/**Set the path of the file object.
 	\param dir The directory.
-	\param file THe file in dir.*/
+	\param name THe file in dir.*/
 	void SetPath(const cg::Dir & dir, const std::string & name);
 private:
 	using cg::LogAdaptor<File>::EnableLogs;

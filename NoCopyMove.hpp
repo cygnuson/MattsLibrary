@@ -2,7 +2,7 @@
 
 
 namespace cg {
-
+/**Quickly disable copies.*/
 struct NoCopy
 {
 	NoCopy() {};
@@ -10,6 +10,7 @@ struct NoCopy
 	void operator=(const NoCopy& other) = delete;
 };
 
+/**Quickly disable moves.*/
 struct NoMove
 {
 	NoMove() {};

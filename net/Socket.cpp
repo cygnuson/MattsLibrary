@@ -222,10 +222,10 @@ Socket::operator OSSocket()const
 	return m_socket;
 }
 
-void Socket::Shutdown(const Socket & socket, cg::net::Shutdown how)
+void Socket::Shutdown(cg::net::Shutdown how)
 {
 	Lock();
-	auto sd = shutdown(socket, (socklen_t)how);
+	auto sd = shutdown(m_socket, (socklen_t)how);
 	Unlock();
 	if (sd == -1)
 	{

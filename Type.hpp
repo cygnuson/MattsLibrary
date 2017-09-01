@@ -16,6 +16,8 @@ class DemoteType {
 public:
 	/**The type that has been demoted.*/
 	using type = T;
+	/**Get the max value of a type.
+	\return The max value.*/
 	constexpr std::size_t Max() const {
 		return std::numeric_limits<type>::max();
 	}
@@ -26,6 +28,8 @@ class DemoteType<uint64_t> {
 public:
 	/**The type that has been demoted.*/
 	using type = uint32_t;
+	/**Get the max value of a type.
+	\return The max value.*/
 	constexpr std::size_t Max() const {
 		return std::numeric_limits<type>::max();
 	}
@@ -36,6 +40,8 @@ class DemoteType<uint32_t> {
 public:
 	/**The type that has been demoted.*/
 	using type = uint16_t;
+	/**Get the max value of a type.
+	\return The max value.*/
 	constexpr std::size_t Max() const {
 		return std::numeric_limits<type>::max();
 	}
@@ -46,6 +52,8 @@ class DemoteType<uint16_t> {
 public:
 	/**The type that has been demoted.*/
 	using type = uint8_t;
+	/**Get the max value of a type.
+	\return The max value.*/
 	constexpr std::size_t Max() const {
 		return std::numeric_limits<type>::max();
 	}
@@ -64,6 +72,8 @@ class PromoteType {
 public:
 	/**The type that has been promoted.*/
 	using type = T;
+	/**Get the max value of a type.
+	\return The max value.*/
 	constexpr std::size_t Max() const {
 		return std::numeric_limits<type>::max();
 	}
@@ -73,6 +83,8 @@ template<> class PromoteType<uint32_t> {
 public:
 	/**The type that has been promoted.*/
 	using type = uint64_t;
+	/**Get the max value of a type.
+	\return The max value.*/
 	constexpr std::size_t Max() const {
 		return std::numeric_limits<type>::max();
 	}
@@ -82,6 +94,8 @@ template<> class PromoteType<uint16_t> {
 public:
 	/**The type that has been promoted.*/
 	using type = uint32_t;
+	/**Get the max value of a type.
+	\return The max value.*/
 	constexpr std::size_t Max() const {
 		return std::numeric_limits<type>::max();
 	}
@@ -91,6 +105,8 @@ template<> class PromoteType<uint8_t> {
 public:
 	/**The type that has been promoted.*/
 	using type = uint16_t;
+	/**Get the max value of a type.
+	\return The max value.*/
 	constexpr std::size_t Max() const {
 		return std::numeric_limits<type>::max();
 	}

@@ -6,7 +6,7 @@
 #include "Memory.hpp"
 
 namespace cg {
-
+/**Class for viewing cstyle arrays.*/
 template<typename T>
 struct ArrayViewImpl
 {

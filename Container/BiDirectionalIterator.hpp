@@ -26,7 +26,6 @@ public:
 	/**default ctor*/
 	BiDirectionalIterator() :m_node(nullptr) {};
 	/**Construct into a chain.
-	\param ptr THe pointer to the data.
 	\param node The pointer to the active node.*/
 	BiDirectionalIterator(NodeType* node) {
 		m_node = node;

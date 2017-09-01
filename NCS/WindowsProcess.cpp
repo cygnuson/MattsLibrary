@@ -2,7 +2,7 @@
 
 namespace cg {
 
-Process::Process(const std::string & path)
+Process::Process(const std::string& path)
 {
 	if (path.size() > 0)
 	{
@@ -34,7 +34,7 @@ Process::~Process()
 	ClosePipes();
 }
 
-void Process::Start(const std::string & args, double updateFPS)
+void Process::Start(const std::string& args, double updateFPS)
 {
 	m_running = true;
 	if (m_procPath.size() == 0)

@@ -32,7 +32,7 @@ ToString(const std::string& str)
 	return str;
 }
 
-
+/**The basic logger class (static).*/
 class Logger
 {
 public:

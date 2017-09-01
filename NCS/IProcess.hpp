@@ -4,7 +4,7 @@
 #include "../Memory.hpp"
 
 namespace cg {
-
+/**The process interface.*/
 class IProcess
 {
 public:
@@ -20,10 +20,11 @@ public:
 	\return An ostream that will sync to the childs stdin.*/
 	virtual inline std::ostream& ChildInput();
 	/**Push some input to the child.
-	\param str The input to insert to the child.*/
+	\param in The input to insert to the child.*/
 	virtual void InsertInput(const std::string& in) = 0;
 	/**Start a process.
-	\pram args The args to send along as space seperated strings.
+	\param args The args to send along as space seperated strings.
+	\param updateFPS The FPS for which to run the update loops.
 	\return True if the process was started properly.*/
 	virtual void Start(const std::string& args = "",
 		double updateFPS = 10) = 0;
@@ -48,7 +49,8 @@ public:
 	virtual void Kill() = 0;
 	/**create a runnable command string.
 	\tparam Args Anyhting that is convertable to strings for command args.
-	\param args command line args for the process.*/
+	\param args command line args for the process.
+	\param commandName The name of the command to run.*/
 	template<typename...Args>
 	static std::string CreateProcessString(const std::string& commandName,
 		Args&&...args)

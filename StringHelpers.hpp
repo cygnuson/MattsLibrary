@@ -7,14 +7,18 @@
 namespace cg {
 
 
+/**Interface for stringing objects*/
 struct Stringable
 {
+	/**Convert a thing to a string.
+	\return The string.*/
 	virtual std::string ToString() const = 0;
 };
-
+/**Interface helper for stringing objects*/
 template<typename T>
 struct IsStringable
 {
+	/**The type without any qualifiers.*/
 	using Type = std::decay_t<T>;
 	enum {
 		value = std::is_base_of<Stringable, Type>::value,

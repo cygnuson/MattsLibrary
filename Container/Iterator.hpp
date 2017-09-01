@@ -7,11 +7,12 @@
 
 namespace cg {
 
-
+/**The basic iterator.*/
 template<typename T, bool Const = false>
 class Iterator
 {
 public:
+	/**Something was out of bounds.*/
 	struct OutOfBoundsException : public cg::Exception
 	{
 		/**Get the error.
@@ -21,6 +22,7 @@ public:
 			return "The pointer is out of bounds.";
 		}
 	};
+	/**Something was a nullptr.*/
 	struct NullPtrException : public cg::Exception
 	{
 		/**Get the error.

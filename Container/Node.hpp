@@ -5,10 +5,11 @@
 #include "../Memory.hpp"
 
 namespace cg {
-
+/**The basic node type.*/
 template<typename T>
 struct Node
 {
+	/**Some node access was out of bounds.*/
 	struct OutOfBoundsException : public cg::Exception
 	{
 		/**Get the error.
@@ -18,6 +19,7 @@ struct Node
 			return "The pointer is out of bounds.";
 		}
 	};
+	/**Some node was nullptr*/
 	struct NullPtrException : public cg::Exception
 	{
 		/**Get the error.

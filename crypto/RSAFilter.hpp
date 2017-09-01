@@ -6,6 +6,7 @@
 
 namespace cg {
 
+/**A reader/writing filter for RSA encryption.*/
 class RSADecryptFilter : public cg::Filter
 {
 public:
@@ -52,6 +53,7 @@ private:
 
 };
 
+/**A reader/writing filter for RSA encryption.*/
 class RSAEncryptFilter : public cg::Filter
 {
 public:

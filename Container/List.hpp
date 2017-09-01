@@ -3,7 +3,7 @@
 #include "Iterator.hpp"
 
 namespace cg {
-
+/**List base type*/
 template<typename T>
 class List {
 public:

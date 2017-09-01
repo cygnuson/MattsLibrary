@@ -109,7 +109,6 @@ struct Socket : cg::net::NetworkObject,
 	virtual bool WriteReady(std::ptrdiff_t timeout = 0) const;
 	/**Get the name of a connected socket. Usually as an address.
 
-	\param socket The socket for which to get the name.
 	\param addr A refernce to a sockaddr_storage object that will be the
 	location of the data once it has been received.  It must be accessed
 	after the fact casted as such (sockaddr_in*) or (sockaddr_in6*).
@@ -157,7 +156,6 @@ struct Socket : cg::net::NetworkObject,
 
 	Send data to a connected socket. If the socket does not have a valid
 	connection, then the function will throw cg::net::NetworkException.
-	\param socket A reference to a socket to send the data to.
 	\param data A pointer to the data to send.
 	\param size The size of the data to send.
 	\param block True to black untill all the data is sent.
@@ -177,8 +175,7 @@ struct Socket : cg::net::NetworkObject,
 	\param how The type of shut down as a cg::net::Shutdown enum.
 	\sa cg::net::Shutdown
 	\throws NetworkEexception Throws the error code from the OS socket.*/
-	void Shutdown(const Socket& socket,
-		cg::net::Shutdown how);
+	void Shutdown(cg::net::Shutdown how);
 	/**Close a socket gracefully.
 
 	\throws NetworkException Throws the error code from the OS sockets.*/
@@ -256,6 +253,7 @@ protected:/********************************************************************P
 
 	Register the socket with the operating system so that it can be used for
 	communication.
+	\param useIp6 True to initialize the socket to use IP v6.
 	\param stayLocked True to stay locked after created.
 	\throws NetworkException Will throw with any socket system errors that may
 	arise with the socket creation process.*/
@@ -264,7 +262,6 @@ protected:/********************************************************************P
 
 	This is mainly for getting the linux sockets into non block mode.  Win
 	sockets are not designed to be blocking but they can be if required.
-	\param socket The socket to set.
 	\param block True to set the socket to blocking mode. Flase to set it to
 	non-blocking mode.*/
 	void SetBlockMode(bool block);

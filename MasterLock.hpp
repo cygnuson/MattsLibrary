@@ -49,7 +49,9 @@ using PtrIf = std::conditional_t<Cond, T*, T>;
 template<std::size_t temp = 0>
 struct LockCounter
 {
+	/**The amount of hits for a shared lock action.*/
 	static std::size_t m_shared_hits;
+	/**The amount of hits for a unique lock action.*/
 	static std::size_t m_unique_hits;
 };
 

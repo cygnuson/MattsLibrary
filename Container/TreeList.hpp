@@ -6,7 +6,7 @@
 #define _DEBUGTREELIST _DEBUG && _DEBUGTREEITERATOR && 1
 
 namespace cg {
-
+/**A tree implimentation of a list.*/
 template<typename T,
 	template <typename, typename, bool, bool> typename IteratorType>
 class TreeListImpl : public cg::List<T>
@@ -47,11 +47,9 @@ public:/**This type.*/
 	template<typename R>
 	TreeListImpl(R begin, const R& end);
 	/**Push an element to the list.
-	\param index The place to put the element.
 	\param obj The obj to push front.*/
 	void Push(const T& obj);
 	/**Push an element to the the list.
-	\param index The place to put the element.
 	\param args Args to be sent directly to the ctor of the element.*/
 	template<typename...Args>
 	void Emplace(Args&&...args);
