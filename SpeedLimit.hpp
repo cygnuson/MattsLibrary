@@ -1,9 +1,34 @@
+/*
+
+(C) Matthew Swanson
+
+This file is part of _PROJECT_NAME_.
+
+_PROJECT_NAME_ is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
+
+_PROJECT_NAME_ is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with _PROJECT_NAME_.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #pragma once
 
 #include <thread>
 #include <chrono>
 
 namespace cg {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////SpeedLimit_Impl////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**Class for limiting the rate that a program can run run.
 
@@ -65,12 +90,15 @@ private:
 	bool m_disabled = false;
 	/**The time to wait between blocks.*/
 	T m_time;
+	/**The extra time offset*/
+	T m_extra;
 };
 
 template<typename T>
 inline cg::SpeedLimit_Impl<T>::SpeedLimit_Impl(T t)
 {
 	m_time = t;
+	m_extra = std::chrono::nanoseconds(0);
 	m_lastTick = std::chrono::high_resolution_clock().now();
 	m_initTime = std::chrono::high_resolution_clock().now();
 }
@@ -79,6 +107,7 @@ template<typename T>
 inline SpeedLimit_Impl<T>::SpeedLimit_Impl()
 {
 	m_time = std::chrono::seconds(1);
+	m_extra = std::chrono::nanoseconds(0);
 	m_lastTick = std::chrono::high_resolution_clock().now();
 	m_initTime = std::chrono::high_resolution_clock().now();
 }
@@ -89,6 +118,7 @@ inline SpeedLimit_Impl<T>::SpeedLimit_Impl(double frameRate)
 	m_lastTick = std::chrono::high_resolution_clock().now();
 	m_initTime = std::chrono::high_resolution_clock().now();
 	FPS(frameRate);
+	m_extra = std::chrono::nanoseconds(0);
 }
 
 template<typename T>
@@ -117,8 +147,22 @@ inline void SpeedLimit_Impl<T>::operator()()
 	auto spent = (std::chrono::high_resolution_clock().now() - m_lastTick);
 	if (spent < m_time)
 	{
-		auto sleepTime = m_time - spent;
+		auto sleepTime = (m_time - spent);
+		if (sleepTime > m_extra)
+			sleepTime -= m_extra;
+		else
+		{
+			m_extra -= sleepTime;
+			m_lastTick = std::chrono::high_resolution_clock().now();
+			return;
+		}
 		std::this_thread::sleep_for(sleepTime);
+		m_extra = std::chrono::nanoseconds(0);
+	}	
+	spent = (std::chrono::high_resolution_clock().now() - m_lastTick);
+	if (spent > m_time)
+	{
+		m_extra = spent - m_time;
 	}
 	m_lastTick = std::chrono::high_resolution_clock().now();
 }

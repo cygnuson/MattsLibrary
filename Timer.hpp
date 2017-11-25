@@ -1,3 +1,24 @@
+/*
+
+(C) Matthew Swanson
+
+This file is part of _PROJECT_NAME_.
+
+_PROJECT_NAME_ is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
+
+_PROJECT_NAME_ is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with _PROJECT_NAME_.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #pragma once
 
 #include <chrono>
@@ -8,6 +29,11 @@
 #include "SpeedLimit.hpp"
 
 namespace cg {
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////Timer Class////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 /**Generic timing fucntions.
 *
 *The timer starts when its created.
@@ -15,12 +41,15 @@ namespace cg {
 class Timer
 {
 public:
-	/**Create the timer.
-	\param startPaused True to start in a paused state.*/
+
 	Timer(bool startPaused = false);
-	/**Restart the timer
-	\return The amount of time sense Start() or Restart() was called.*/
-	std::chrono::nanoseconds Restart();
+	template<typename T = std::chrono::nanoseconds>
+	T Restart()
+	{
+		auto t = GetTime<T>();
+		Start();
+		return t;
+	}
 	/**Get the time in seconds that passed sense the objects creation.*/
 	template<typename DurationType = std::chrono::duration<double>>
 	DurationType GetTime();
@@ -31,14 +60,14 @@ public:
 	/**get the chrono duration.
 	\return The time passed as a chrono duration.*/
 	std::chrono::nanoseconds GetDuration() const;
-	/**start the timer.*/
+	/*start the timer.*/
 	void Start();
 	/**Call a callable object FPS times per second.  The caller should return
 	false when its time to stop running.
 	\param fps the calls per second.  If FPS is zero, there will be no limit.
 	\param caller The callable object to call FPS calls per sec.  The caller
 	should return false when its time to stop running.
-	\param amt The max amount of calls to make.
+	\param amt The max amount of calls to make. ZERO for no limit.
 	\param args The arguments to call the caller with.*/
 	template<typename Call, typename...Args>
 	static void CallPerSec(double fps,
@@ -65,7 +94,7 @@ public:
 	template<typename TimeUnit = std::chrono::duration<float>,
 		typename Caller, typename...Args>
 	static TimeUnit TimedCall(Caller& caller,
-		Args&&...args);
+		Args...args);
 	/**Translate any chrono::duration premade unit to a string.*/
 	template<typename T>
 	static std::string TranslateTimeUnit();
@@ -96,11 +125,16 @@ inline void Timer::CallPerSec(double fps,
 	sl.FPS(fps);
 	bool run = true;
 	uint64_t calls = 0;
+	Timer dt;
+	dt.Start();
 	while (run)
 	{
 		sl();
-		run = caller(std::forward<Args>(args)...)
-			&& ++calls <= (amt-1);
+		bool limitReached = false;
+		if (amt != 0)
+			limitReached = ++calls <= (amt - 1);
+		run = (caller)(std::forward<Args>(args)...)
+			&& !limitReached;
 	}
 }
 
@@ -123,8 +157,8 @@ inline void Timer::CallOverTime(uint64_t amt,
 }
 
 template<typename TimeUnit, typename Caller, typename ...Args>
-inline TimeUnit Timer::TimedCall(Caller& caller, 
-	Args&&...args)
+inline TimeUnit Timer::TimedCall(Caller & caller, 
+	Args ...args)
 {
 	Timer timer;
 	timer.Start();
