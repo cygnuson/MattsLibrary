@@ -11,23 +11,17 @@
 
 int main()
 {
-    cg::BinaryTree<std::string, int, cg::Less<int>> t;
-    t.Emplace(100, "100");
-    t.Emplace(200, "200");
-    t.Emplace(250, "250");
-    t.Emplace(50, "50");
-    
-    t.ShowKeys(std::cout);
-    std::cout << "\n";
-    t.Get(200) = "200.";
-    t.Pop(200);
-    t.ShowKeys(std::cout);
+    cg::BinaryTree<int, int, cg::Less<int>> t;
 
-    std::cout << "\n\n\n";
-    auto beg = t.RBegin();
-    auto end = t.REnd();
-    for (; beg != end; ++beg)
-        std::cout << (*beg).m_a << ",";
+    t.Emplace(7, 123);
+    t.Emplace(6, 456);
+    t.Emplace(8, 789);
+    t.Emplace(9, 012);
+    t.Emplace(4, 345);
+    t.Emplace(3, 678);
+    t.Emplace(10, 901);
+
+    t.ShowKeys(std::cout);
 
     int stop = 0;
     return 0;

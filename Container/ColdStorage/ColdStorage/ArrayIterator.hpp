@@ -200,7 +200,7 @@ inline bool ArrayIterator<DataType, Const, Reverse>::operator==(
 comparison.*/
 template<typename DataType, bool Const, bool Reverse>
 inline bool ArrayIterator<DataType, Const, Reverse>::operator<(
-	const SelfType & other)
+	const SelfType & other)const
 {
 	if (Reverse)
 		return m_ptr > other.m_ptr;
@@ -213,7 +213,7 @@ inline bool ArrayIterator<DataType, Const, Reverse>::operator<(
 comparison.*/
 template<typename DataType, bool Const, bool Reverse>
 inline bool ArrayIterator<DataType, Const, Reverse>::operator<=(
-	const SelfType & other)
+	const SelfType & other)const
 {
 	return (*this < other) || (*this == other);
 }
@@ -223,7 +223,7 @@ inline bool ArrayIterator<DataType, Const, Reverse>::operator<=(
 comparison.*/
 template<typename DataType, bool Const, bool Reverse>
 inline bool ArrayIterator<DataType, Const, Reverse>::operator>(
-	const SelfType & other)
+	const SelfType & other)const
 {
 	return !(*this <= other);
 }
@@ -233,7 +233,7 @@ inline bool ArrayIterator<DataType, Const, Reverse>::operator>(
 comparison.*/
 template<typename DataType, bool Const, bool Reverse>
 inline bool ArrayIterator<DataType, Const, Reverse>::operator>=(
-	const SelfType & other)
+	const SelfType & other)const
 {
 	return !(*this < other);
 }

@@ -42,28 +42,25 @@ public:
     using DataType = typename NodeType::DataType;
     using KeyType = typename NodeType::KeyType;
     using Predicate = typename NodeType::Predicate;
-    using TreeType = BinaryTree<DataType, KeyType, Predicate>;
-    using PairType = typename TreeType::PairType;
+    using PairType = typename NodeType::PairType;
     /**The type of data reference to return.*/
-    using Ref = ConditionalType<Const, const PairType&, PairType&>;
+    using Ref = 
+        ConditionalType<Const, const typename PairType&, typename PairType&>;
     /**The type of data reference to return.*/
-    using Ptr = ConditionalType<Const, const PairType*, PairType*>;
+    using Ptr = 
+        ConditionalType<Const, const typename PairType*, typename PairType*>;
     /**The type of data reference to return.*/
-    using TreePtr = ConditionalType<Const, const TreeType*, TreeType*>;
+    using NodePtr = ConditionalType<Const, const NodeType*, NodeType*>;
     /**The type of this object.*/
     using SelfType = BinaryTreeIterator<NodeType, Const, Reverse>;
 
-    BinaryTreeIterator() : m_active(nullptr), m_tree(nullptr) {}
+    BinaryTreeIterator() : m_active(nullptr), m_root(nullptr) {}
 
     ~BinaryTreeIterator() {
         DeleteStack();
     }
 
-    BinaryTreeIterator(TreePtr tree);
-
-    BinaryTreeIterator(TreePtr tree, NodeType* startNode);
-
-    BinaryTreeIterator(NodeType* p);
+    BinaryTreeIterator(NodePtr root);
 
     BinaryTreeIterator(const SelfType& other);
 
@@ -95,13 +92,13 @@ public:
 
     bool operator==(const SelfType& other) const;
 
-    bool operator<(const SelfType& other);
+    bool operator<(const SelfType& other)const;
 
-    bool operator<=(const SelfType& other);
+    bool operator<=(const SelfType& other)const;
 
-    bool operator>(const SelfType& other);
+    bool operator>(const SelfType& other)const;
 
-    bool operator>=(const SelfType& other);
+    bool operator>=(const SelfType& other)const;
 
     SelfType operator+(const SizeType& amt) const;
 
@@ -119,20 +116,27 @@ private:
     /**Check and throw and exceptions needed*/
     void CheckAndThrow() const;
     /**A reference to the tree*/
-    TreePtr m_tree;
+    NodePtr m_root;
     /**the active node.*/
-    NodeType** m_active;
+    NodePtr* m_active;
     /**The stack counter*/
     SizeType m_stackCount;
     /**The stack index.*/
-    SizeType m_stackIndex;
+    DiffType m_stackIndex;
     
     void MakeStack();
 
-    void AddStack(NodeType* n);
+    void AddStack(NodePtr n);
 
     void DeleteStack();
 
+    static SizeType SizeHelper(NodePtr startNode);
+
 };
+
+template class BinaryTreeIterator<BinaryTreeNode<int, int, Less<int>>, 0, 1>;
+template class BinaryTreeIterator<BinaryTreeNode<int, int, Less<int>>, 0, 0>;
+template class BinaryTreeIterator<BinaryTreeNode<int, int, Less<int>>, 1, 1>;
+template class BinaryTreeIterator<BinaryTreeNode<int, int, Less<int>>, 1, 0>;
 
 }

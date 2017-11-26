@@ -114,7 +114,7 @@ template<typename DataType, typename KeyType, typename Predicate>
 inline typename  BinaryTree<DataType, KeyType, Predicate>::ConstIterator
 BinaryTree<DataType, KeyType, Predicate>::Begin() const
 {
-    return ConstIterator(this);
+    return ConstIterator(m_root);
 }
 /**Get the begin iterator.
 \return The begin iterator to the first inorder element.*/
@@ -122,7 +122,7 @@ template<typename DataType, typename KeyType, typename Predicate>
 inline typename  BinaryTree<DataType, KeyType, Predicate>::Iterator
 BinaryTree<DataType, KeyType, Predicate>::Begin()
 {
-    return Iterator(this);
+    return Iterator(m_root);
 }
 /**Get the reverse begin iterator.
 \return The reverse begin iterator to the first inorder element.*/
@@ -130,7 +130,7 @@ template<typename DataType, typename KeyType, typename Predicate>
 inline typename  BinaryTree<DataType, KeyType, Predicate>::ConstReverseIterator
 BinaryTree<DataType, KeyType, Predicate>::RBegin() const
 {
-    return ConstReverseIterator(this);
+    return ConstReverseIterator(m_root);
 }
 /**Get the reverse begin iterator.
 \return The reverse begin iterator to the first inorder element.*/
@@ -138,7 +138,7 @@ template<typename DataType, typename KeyType, typename Predicate>
 inline typename  BinaryTree<DataType, KeyType, Predicate>::ReverseIterator
 BinaryTree<DataType, KeyType, Predicate>::RBegin()
 {
-    return ReverseIterator(this);
+    return ReverseIterator(m_root);
 }
 /**Get a one past the end iterator.
 \return A iterator to one element past the end.*/

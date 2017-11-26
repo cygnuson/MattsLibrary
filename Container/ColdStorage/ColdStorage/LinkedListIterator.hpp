@@ -195,7 +195,7 @@ inline bool LinkedListIterator<DataType, Const, Reverse>::operator==(
 \return True if the comparison evaluates to true.*/
 template<typename DataType, bool Const, bool Reverse>
 inline bool LinkedListIterator<DataType, Const, Reverse>::operator<(
-    const SelfType & other)
+    const SelfType & other)const
 {
     CheckAndThrow();
     bool found = false;
@@ -217,7 +217,7 @@ inline bool LinkedListIterator<DataType, Const, Reverse>::operator<(
 \return True if the comparison evaluates to true.*/
 template<typename DataType, bool Const, bool Reverse>
 inline bool LinkedListIterator<DataType, Const, Reverse>::operator<=(
-    const SelfType & other)
+    const SelfType & other)const
 {
     return (*this < other) || (*this == other);
 }
@@ -226,7 +226,7 @@ inline bool LinkedListIterator<DataType, Const, Reverse>::operator<=(
 \return True if the comparison evaluates to true.*/
 template<typename DataType, bool Const, bool Reverse>
 inline bool LinkedListIterator<DataType, Const, Reverse>::operator>(
-    const SelfType & other)
+    const SelfType & other)const
 {
     return !(*this <= other);
 }
@@ -235,7 +235,7 @@ inline bool LinkedListIterator<DataType, Const, Reverse>::operator>(
 \return True if the comparison evaluates to true.*/
 template<typename DataType, bool Const, bool Reverse>
 inline bool LinkedListIterator<DataType, Const, Reverse>::operator>=(
-    const SelfType & other)
+    const SelfType & other)const
 {
     return !(*this < other);
 }

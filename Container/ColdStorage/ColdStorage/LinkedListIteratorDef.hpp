@@ -86,13 +86,13 @@ public:
 
     bool operator==(const SelfType& other) const;
 
-    bool operator<(const SelfType& other);
+    bool operator<(const SelfType& other)const;
 
-    bool operator<=(const SelfType& other);
+    bool operator<=(const SelfType& other)const;
 
-    bool operator>(const SelfType& other);
+    bool operator>(const SelfType& other)const;
 
-    bool operator>=(const SelfType& other);
+    bool operator>=(const SelfType& other)const;
 
     SelfType operator+(const SizeType& amt) const;
 
